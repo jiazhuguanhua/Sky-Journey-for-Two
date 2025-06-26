@@ -1,0 +1,233 @@
+.dice-container {
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  padding: 25px;
+  box-shadow: var(--box-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  min-width: 220px;
+}
+
+.current-player-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(255, 107, 138, 0.1);
+  border-radius: var(--border-radius-small);
+  width: 100%;
+}
+
+.player-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.player-details h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.player-details p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.dice {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #fff, #f8f9fa);
+  border: 3px solid var(--primary-pink);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  box-shadow: 
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    inset 0 2px 4px rgba(255, 255, 255, 0.8);
+  transform-style: preserve-3d;
+}
+
+.dice:hover:not(.disabled):not(.rolling) {
+  border-color: var(--primary-blue);
+  box-shadow: 
+    0 12px 24px rgba(74, 144, 226, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.8);
+}
+
+.dice.rolling {
+  border-color: var(--accent-gold);
+  box-shadow: 
+    0 12px 24px rgba(255, 215, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.8);
+}
+
+.dice.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #ccc;
+}
+
+.dice-face {
+  font-size: 2.5rem;
+  color: var(--primary-pink);
+  transition: var(--transition);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dice.rolling .dice-face {
+  color: var(--accent-gold);
+}
+
+.dice-number {
+  position: absolute;
+  bottom: -10px;
+  right: -10px;
+  background: var(--primary-pink);
+  color: white;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(255, 107, 138, 0.4);
+}
+
+.roll-button {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--border-radius-small);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.roll-button.btn-disabled {
+  background: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  border: none;
+}
+
+.roll-button:not(.btn-disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 138, 0.4);
+}
+
+.roll-history {
+  text-align: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--border-radius-small);
+  width: 100%;
+}
+
+.roll-history p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.dice-instructions {
+  text-align: center;
+  width: 100%;
+}
+
+.dice-instructions p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* 掷骰子动画效果 */
+@keyframes diceRoll {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: rotateX(90deg) rotateY(90deg);
+  }
+  50% {
+    transform: rotateX(180deg) rotateY(180deg);
+  }
+  75% {
+    transform: rotateX(270deg) rotateY(270deg);
+  }
+  100% {
+    transform: rotateX(360deg) rotateY(360deg);
+  }
+}
+
+.dice.rolling {
+  animation: diceRoll 1s ease-in-out;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .dice-container {
+    padding: 20px;
+    min-width: 180px;
+  }
+  
+  .dice {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .dice-face {
+    font-size: 2rem;
+  }
+  
+  .current-player-info {
+    padding: 12px;
+  }
+  
+  .player-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dice-container {
+    padding: 15px;
+    min-width: 160px;
+  }
+  
+  .dice {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .dice-face {
+    font-size: 1.8rem;
+  }
+  
+  .roll-button {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+}

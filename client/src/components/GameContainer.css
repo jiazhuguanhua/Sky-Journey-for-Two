@@ -1,0 +1,121 @@
+.game-container {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 20px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 107, 138, 0.3);
+  border-top: 4px solid var(--primary-pink);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.game-info h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--primary-pink), var(--primary-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.players-info {
+  display: flex;
+  gap: 20px;
+}
+
+.game-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 30px;
+  align-items: start;
+}
+
+.board-container {
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  padding: 30px;
+  box-shadow: var(--box-shadow);
+}
+
+.game-controls {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .game-main {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .game-controls {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-container {
+    padding: 15px;
+  }
+  
+  .game-header {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .players-info {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .board-container {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-container {
+    padding: 10px;
+  }
+  
+  .game-info h1 {
+    font-size: 1.2rem;
+  }
+  
+  .players-info {
+    gap: 15px;
+  }
+}

@@ -1,0 +1,252 @@
+.event-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.event-modal {
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-hover);
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.event-header {
+  padding: 25px;
+  text-align: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.event-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.event-icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  animation: pulse 2s infinite;
+}
+
+.event-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.event-body {
+  padding: 30px;
+}
+
+.event-player {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 107, 138, 0.1);
+  border-radius: var(--border-radius-small);
+}
+
+.event-player p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.player-name {
+  color: var(--primary-pink);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.event-content {
+  margin: 25px 0;
+  text-align: center;
+}
+
+.event-text {
+  background: var(--bg-secondary);
+  padding: 20px;
+  border-radius: var(--border-radius-small);
+  border-left: 4px solid var(--primary-pink);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  position: relative;
+}
+
+.event-text::before {
+  content: '"';
+  position: absolute;
+  top: -5px;
+  left: 10px;
+  font-size: 3rem;
+  color: var(--primary-pink);
+  opacity: 0.3;
+}
+
+.event-text::after {
+  content: '"';
+  position: absolute;
+  bottom: -25px;
+  right: 10px;
+  font-size: 3rem;
+  color: var(--primary-pink);
+  opacity: 0.3;
+}
+
+.event-instructions {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.event-instructions p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.event-actions {
+  padding: 20px 30px 30px;
+  text-align: center;
+}
+
+.complete-btn {
+  padding: 15px 40px;
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+.complete-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.complete-btn:hover::before {
+  left: 100%;
+}
+
+.event-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.floating-heart {
+  position: absolute;
+  font-size: 1.2rem;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+/* 动画效果 */
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .event-modal {
+    max-width: 90vw;
+    margin: 20px;
+  }
+  
+  .event-header {
+    padding: 20px;
+  }
+  
+  .event-icon {
+    font-size: 2.5rem;
+  }
+  
+  .event-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .event-body {
+    padding: 25px;
+  }
+  
+  .event-text {
+    padding: 18px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .event-modal-overlay {
+    padding: 15px;
+  }
+  
+  .event-header {
+    padding: 18px;
+  }
+  
+  .event-icon {
+    font-size: 2rem;
+  }
+  
+  .event-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .event-body {
+    padding: 20px;
+  }
+  
+  .event-text {
+    padding: 15px;
+    font-size: 0.95rem;
+  }
+  
+  .complete-btn {
+    padding: 12px 30px;
+    font-size: 14px;
+    min-width: 150px;
+  }
+}
