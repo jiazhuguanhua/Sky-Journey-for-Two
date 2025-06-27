@@ -10,6 +10,10 @@ export class GameService {
       eventPositions: [3, 7, 11, 15, 18],
       eventProbability: 0.7,
       challengeTimeout: 60,
+      diceCooldown: 3,
+      taskProbability: 70,
+      soundVolume: 50,
+      bgmTrack: 'romantic',
       aiProviders: {
         openai: {
           enabled: false,
@@ -23,11 +27,30 @@ export class GameService {
     this.gameStats = {
       totalGames: 0,
       totalPlayers: 0,
-      averageGameTime: 0
+      averageGameTime: 0,
+      onlineUsers: 0,
+      activeRooms: 0,
+      tasksCompleted: 0
     }
   }
 
-  // 房间管理
+  // 生成短房间ID
+  generateRoomId() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let result = ''
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    
+    // 确保ID唯一
+    if (this.rooms.has(result)) {
+      return this.generateRoomId()
+    }
+    
+    return result
+  }
+
+  // 增强版创建房间
   createRoom(hostSocketId, playerInfo) {
     const roomId = this.generateRoomId()
     const room = {
@@ -39,6 +62,7 @@ export class GameService {
           socketId: hostSocketId,
           position: 0,
           isActive: false,
+          isHost: true,
           joinedAt: new Date()
         }
       },
@@ -48,24 +72,77 @@ export class GameService {
         diceValue: null,
         currentEvent: null,
         ultimateChallenge: null,
-        winner: null,
+        turn: 0,
         startTime: null,
-        endTime: null,
-        turnCount: 0
+        endTime: null
       },
-      settings: { ...this.gameSettings },
-      logs: []
+      config: {
+        maxPlayers: 2,
+        gameType: 'couple',
+        isPrivate: false,
+        password: null,
+        settings: { ...this.gameSettings }
+      },
+      createdAt: new Date(),
+      lastActivity: new Date()
     }
 
     this.rooms.set(roomId, room)
     this.players.set(hostSocketId, roomId)
     
-    this.logGameEvent(roomId, 'room_created', { hostId: hostSocketId, playerInfo })
-    logger.info(`Room created: ${roomId} by ${hostSocketId}`)
+    // 更新统计
+    this.updateStats()
     
+    logger.info(`Room created: ${roomId} by ${hostSocketId}`)
     return { roomId, room }
   }
 
+  // 获取房间
+  getRoom(roomId) {
+    return this.rooms.get(roomId)
+  }
+
+  // 获取公开房间列表
+  getPublicRooms() {
+    return Array.from(this.rooms.values()).filter(room => 
+      !room.config?.isPrivate && room.gameState.status === 'waiting'
+    )
+  }
+
+  // 删除房间
+  deleteRoom(roomId) {
+    const room = this.rooms.get(roomId)
+    if (room) {
+      // 清理玩家映射
+      Object.keys(room.players).forEach(playerId => {
+        this.players.delete(playerId)
+      })
+      
+      this.rooms.delete(roomId)
+      this.updateStats()
+      logger.info(`Room deleted: ${roomId}`)
+    }
+  }
+
+  // 更新统计数据
+  updateStats() {
+    this.gameStats.activeRooms = this.rooms.size
+    this.gameStats.onlineUsers = this.players.size
+  }
+
+  // 更新游戏设置
+  updateGameSettings(newSettings) {
+    this.gameSettings = { ...this.gameSettings, ...newSettings }
+    
+    // 应用到所有活跃房间
+    this.rooms.forEach(room => {
+      room.config.settings = { ...room.config.settings, ...newSettings }
+    })
+    
+    logger.info('Game settings updated:', newSettings)
+  }
+
+  // 房间管理
   joinRoom(roomId, socketId, playerInfo) {
     const room = this.rooms.get(roomId)
     if (!room) {
@@ -336,14 +413,6 @@ export class GameService {
   }
 
   // 工具方法
-  generateRoomId() {
-    let roomId
-    do {
-      roomId = Math.random().toString(36).substring(2, 8).toUpperCase()
-    } while (this.rooms.has(roomId))
-    return roomId
-  }
-
   logGameEvent(roomId, event, data) {
     const room = this.rooms.get(roomId)
     if (!room) return
@@ -373,10 +442,6 @@ export class GameService {
   }
 
   // 管理方法
-  getRoom(roomId) {
-    return this.rooms.get(roomId)
-  }
-
   getAllRooms() {
     return Array.from(this.rooms.values()).map(room => ({
       ...room,
@@ -472,17 +537,6 @@ export class GameService {
     }
   }
 
-  updateSettings(newSettings) {
-    try {
-      this.gameSettings = { ...this.gameSettings, ...newSettings }
-      logger.info('Game settings updated:', newSettings)
-      return this.gameSettings
-    } catch (error) {
-      logger.error('Error updating game settings:', error)
-      throw error
-    }
-  }
-
   getGameStats() {
     const rooms = Array.from(this.rooms.values())
     const totalPlayers = rooms.reduce((sum, room) => sum + Object.keys(room.players).length, 0)
@@ -503,11 +557,6 @@ export class GameService {
 
   getGameSettings() {
     return { ...this.gameSettings }
-  }
-
-  updateGameSettings(newSettings) {
-    this.gameSettings = { ...this.gameSettings, ...newSettings }
-    return this.gameSettings
   }
 
   handlePlayerDisconnect(socketId) {

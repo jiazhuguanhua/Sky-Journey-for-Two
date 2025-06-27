@@ -1,0 +1,314 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+dist/
+build/
+.vite/
+.next/
+out/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Logs
+logs
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary folders
+tmp/
+temp/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Nuxt.js build / generate output
+.nuxt
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Rollup.js default build output
+dist/
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript v1 declaration files
+typings/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.test
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+# Comment in the public line in if your project uses Gatsby and not Next.js
+# https://nextjs.org/blog/next-9-1#public-directory-support
+# public
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Game specific files
+*.save
+*.backup
+game-logs/
+uploads/
+user-data/
+
+# Audio files (if too large)
+# *.mp3
+# *.wav
+# *.ogg
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache files
+.cache/
+*.cache
+
+# Runtime configuration
+config/local.json
+config/production.json
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# PM2 process files
+.pm2/
+
+# Security keys (if any)
+*.pem
+*.key
+secrets/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Package lock files (choose one)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ===================================
+# Sky Journey for Two - 游戏特定文件
+# ===================================
+
+# 游戏存档和用户数据
+saves/
+userdata/
+player-profiles/
+*.save
+*.profile
+
+# 音效和BGM缓存
+audio-cache/
+sound-cache/
+*.wav.cache
+*.mp3.cache
+*.ogg.cache
+
+# 图片和资源缓存
+image-cache/
+assets-cache/
+*.jpg.cache
+*.png.cache
+*.svg.cache
+
+# 房间和游戏状态缓存
+rooms-cache/
+game-states/
+*.room.cache
+*.state.cache
+
+# 统计数据和分析
+stats-cache/
+analytics/
+*.stats.json
+*.analytics.json
+
+# Socket连接日志
+socket-logs/
+connection-*.log
+game-session-*.log
+
+# 用户上传和自定义内容
+uploads/
+user-avatars/
+custom-sounds/
+custom-tasks/
+
+# 临时游戏文件
+game-temp/
+*.temp.game
+*.temp.room
+*.temp.player
+
+# 开发和调试特定文件
+debug-*.log
+game-debug.json
+test-rooms/
+mock-data/
+
+# 服务器运行时文件
+server-temp/
+runtime-config/
+*.runtime.json
+
+# 管理后台特定缓存
+admin-cache/
+admin-logs/
+*.admin.cache
+
+# 性能监控文件
+performance-logs/
+*.perf.json
+*.monitor.log
+
+# 自动生成的配置文件
+auto-config/
+generated-settings/
+*.auto.json
+
+# 用户会话数据
+sessions/
+*.session
+user-sessions/
+
+# 游戏录像和回放
+replays/
+recordings/
+*.replay
+*.recording
+
+# 错误报告和崩溃转储
+crash-dumps/
+error-reports/
+*.dump
+*.crash
+
+# 第三方集成缓存
+integrations-cache/
+api-cache/
+*.integration.cache

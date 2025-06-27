@@ -1,45 +1,151 @@
 import logger from '../config/logger.js'
 
+// 房间状态管理
+const roomHeartbeat = new Map() // 房间心跳检测
+const playerSessions = new Map() // 玩家会话管理
+
 export default function gameSocketHandler(io, socket, gameService) {
-  // 创建房间
+  // 玩家连接初始化
+  socket.on('player-init', (data) => {
+    try {
+      const { deviceId, playerInfo } = data
+      playerSessions.set(socket.id, {
+        deviceId,
+        playerInfo,
+        connectedAt: new Date(),
+        lastHeartbeat: new Date()
+      })
+      
+      socket.emit('player-initialized', { 
+        playerId: socket.id,
+        serverTime: new Date()
+      })
+      
+      logger.info(`Player initialized: ${socket.id} from device ${deviceId}`)
+    } catch (error) {
+      socket.emit('error', { message: error.message })
+    }
+  })
+
+  // 创建房间 - 增强版
   socket.on('create-room', (data) => {
     try {
-      const { roomId, room } = gameService.createRoom(socket.id, data.playerInfo)
+      const { roomConfig, playerInfo } = data
+      const { roomId, room } = gameService.createRoom(socket.id, {
+        ...playerInfo,
+        isHost: true
+      })
+      
+      // 房间配置
+      room.config = {
+        maxPlayers: 2,
+        gameType: roomConfig?.gameType || 'couple',
+        isPrivate: roomConfig?.isPrivate || false,
+        password: roomConfig?.password || null,
+        ...roomConfig
+      }
       
       socket.join(roomId)
-      socket.emit('room-created', { roomId, room })
       
-      logger.info(`Room ${roomId} created by ${socket.id}`)
+      // 设置房间心跳
+      roomHeartbeat.set(roomId, setInterval(() => {
+        checkRoomStatus(roomId)
+      }, 30000)) // 30秒检查一次
+      
+      socket.emit('room-created', { 
+        roomId, 
+        room: sanitizeRoomForClient(room),
+        isHost: true
+      })
+      
+      // 广播房间列表更新
+      broadcastRoomList()
+      
+      logger.info(`Enhanced room ${roomId} created by ${socket.id}`)
     } catch (error) {
       socket.emit('error', { message: error.message })
       logger.error(`Error creating room: ${error.message}`)
     }
   })
 
-  // 加入房间
+  // 加入房间 - 增强版
   socket.on('join-room', (data) => {
     try {
-      const { roomId, playerInfo } = data
-      const room = gameService.joinRoom(roomId, socket.id, playerInfo)
+      const { roomId, playerInfo, password } = data
+      const room = gameService.getRoom(roomId)
+      
+      if (!room) {
+        throw new Error('房间不存在')
+      }
+      
+      if (room.config?.isPrivate && room.config?.password !== password) {
+        throw new Error('房间密码错误')
+      }
+      
+      if (Object.keys(room.players).length >= room.config?.maxPlayers) {
+        throw new Error('房间已满')
+      }
+      
+      const updatedRoom = gameService.joinRoom(roomId, socket.id, playerInfo)
       
       socket.join(roomId)
-      socket.emit('room-joined', { roomId, room })
+      
+      // 通知加入成功
+      socket.emit('room-joined', { 
+        roomId, 
+        room: sanitizeRoomForClient(updatedRoom),
+        isHost: false
+      })
       
       // 通知房间内其他玩家
       socket.to(roomId).emit('player-joined', {
         playerId: socket.id,
-        playerInfo: playerInfo
+        playerInfo: playerInfo,
+        playerCount: Object.keys(updatedRoom.players).length
       })
       
-      // 如果房间满了，可以开始游戏
-      if (Object.keys(room.players).length === 2) {
-        io.to(roomId).emit('room-ready')
+      // 如果房间满了，通知可以开始游戏
+      if (Object.keys(updatedRoom.players).length === updatedRoom.config?.maxPlayers) {
+        io.to(roomId).emit('room-ready', { 
+          canStart: true,
+          message: '所有玩家已就绪，可以开始游戏！'
+        })
       }
+      
+      // 广播房间列表更新
+      broadcastRoomList()
       
       logger.info(`Player ${socket.id} joined room ${roomId}`)
     } catch (error) {
       socket.emit('error', { message: error.message })
       logger.error(`Error joining room: ${error.message}`)
+    }
+  })
+
+  // 获取房间列表
+  socket.on('get-room-list', () => {
+    try {
+      const publicRooms = gameService.getPublicRooms()
+      socket.emit('room-list', {
+        rooms: publicRooms.map(room => ({
+          id: room.id,
+          playerCount: Object.keys(room.players).length,
+          maxPlayers: room.config?.maxPlayers || 2,
+          gameType: room.config?.gameType || 'couple',
+          status: room.status,
+          createdAt: room.createdAt
+        }))
+      })
+    } catch (error) {
+      socket.emit('error', { message: error.message })
+    }
+  })
+
+  // 心跳检测
+  socket.on('heartbeat', () => {
+    const session = playerSessions.get(socket.id)
+    if (session) {
+      session.lastHeartbeat = new Date()
     }
   })
 
@@ -49,7 +155,26 @@ export default function gameSocketHandler(io, socket, gameService) {
       const roomId = gameService.leaveRoom(socket.id)
       if (roomId) {
         socket.leave(roomId)
-        socket.to(roomId).emit('player-left', { playerId: socket.id })
+        
+        // 通知房间内其他玩家
+        socket.to(roomId).emit('player-left', { 
+          playerId: socket.id,
+          message: '玩家已离开房间'
+        })
+        
+        // 检查房间状态
+        const room = gameService.getRoom(roomId)
+        if (room && Object.keys(room.players).length === 0) {
+          // 房间空了，清理房间
+          gameService.deleteRoom(roomId)
+          const heartbeat = roomHeartbeat.get(roomId)
+          if (heartbeat) {
+            clearInterval(heartbeat)
+            roomHeartbeat.delete(roomId)
+          }
+        }
+        
+        broadcastRoomList()
         logger.info(`Player ${socket.id} left room ${roomId}`)
       }
     } catch (error) {
@@ -256,11 +381,99 @@ export default function gameSocketHandler(io, socket, gameService) {
     }
   })
 
-  // 向管理面板广播消息
-  function broadcastToAdmin(event, data) {
-    io.to('admin').emit(event, {
-      timestamp: new Date(),
-      ...data
+  // 辅助函数 - 清理房间数据用于客户端
+  function sanitizeRoomForClient(room) {
+    return {
+      id: room.id,
+      players: room.players,
+      status: room.status,
+      gameState: room.gameState,
+      config: {
+        maxPlayers: room.config?.maxPlayers,
+        gameType: room.config?.gameType,
+        isPrivate: room.config?.isPrivate
+        // 不包含密码等敏感信息
+      },
+      createdAt: room.createdAt
+    }
+  }
+
+  // 检查房间状态
+  function checkRoomStatus(roomId) {
+    const room = gameService.getRoom(roomId)
+    if (!room) {
+      const heartbeat = roomHeartbeat.get(roomId)
+      if (heartbeat) {
+        clearInterval(heartbeat)
+        roomHeartbeat.delete(roomId)
+      }
+      return
+    }
+
+    // 检查玩家连接状态
+    const playerIds = Object.keys(room.players)
+    const activePlayers = playerIds.filter(playerId => {
+      const session = playerSessions.get(playerId)
+      return session && (new Date() - session.lastHeartbeat) < 60000 // 1分钟超时
+    })
+
+    if (activePlayers.length === 0) {
+      // 房间无活跃玩家，清理房间
+      gameService.deleteRoom(roomId)
+      const heartbeat = roomHeartbeat.get(roomId)
+      if (heartbeat) {
+        clearInterval(heartbeat)
+        roomHeartbeat.delete(roomId)
+      }
+      broadcastRoomList()
+      logger.info(`Room ${roomId} cleaned up due to inactivity`)
+    }
+  }
+
+  // 广播房间列表
+  function broadcastRoomList() {
+    const publicRooms = gameService.getPublicRooms()
+    io.emit('room-list-update', {
+      rooms: publicRooms.map(room => ({
+        id: room.id,
+        playerCount: Object.keys(room.players).length,
+        maxPlayers: room.config?.maxPlayers || 2,
+        gameType: room.config?.gameType || 'couple',
+        status: room.status,
+        createdAt: room.createdAt
+      }))
     })
   }
+
+  // 广播给管理员
+  function broadcastToAdmin(event, data) {
+    io.to('admin-room').emit(event, data)
+  }
+
+  // 玩家断线处理
+  socket.on('disconnect', () => {
+    try {
+      // 清理玩家会话
+      playerSessions.delete(socket.id)
+      
+      // 离开房间
+      const roomId = gameService.leaveRoom(socket.id)
+      if (roomId) {
+        socket.to(roomId).emit('player-disconnected', { 
+          playerId: socket.id,
+          message: '玩家已断线'
+        })
+        
+        // 延迟检查房间状态，给玩家重连机会
+        setTimeout(() => {
+          checkRoomStatus(roomId)
+        }, 10000) // 10秒后检查
+      }
+      
+      broadcastRoomList()
+      logger.info(`Player ${socket.id} disconnected`)
+    } catch (error) {
+      logger.error(`Error handling disconnect: ${error.message}`)
+    }
+  })
 }

@@ -10,12 +10,12 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "socket.io-client": "^4.7.2",
     "framer-motion": "^10.16.4",
+    "react": "^18.2.0",
     "react-confetti": "^6.1.0",
-    "react-router-dom": "^6.8.1"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.30.1",
+    "socket.io-client": "^4.7.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
