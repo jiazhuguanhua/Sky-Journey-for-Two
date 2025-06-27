@@ -220,44 +220,44 @@ const TASK_LIBRARIES = {
         '分享一个关于成长的感悟'
       ],
       dare: [
-        '和对方来一个兄弟式的拳头碰撞',
-        '用说唱的方式介绍自己',
-        '做20个俯卧撑',
-        '模仿一个搞笑的表情包',
-        '跳一段freestyle舞蹈',
-        '用方言说一句土味情话'
+        '给对方一个持续30秒的拥抱',,
+        '用最温柔的声音对我说一句肉麻的话',
+        '为我唱一小段你最喜欢的歌',
+        '做一个你觉得最性感的表情',
+        '亲吻对方的手背',yle舞蹈',
+        '为对方按摩肩膀2分钟'
       ]
     }
   },
-  passionate: {
-    name: "🔥 热恋火花版",
+  gentle: {e: {
+    name: "🌸 温柔淑女版",
     tasks: {
       truth: [
-        '说出你对我最深的三个感受',
-        '描述你想象中我们未来的样子',
-        '告诉我你最想为我做的一件事',
-        '分享你觉得我们最甜蜜的一个瞬间',
-        '说出你希望我们一起改变的一个习惯',
-        '描述你眼中我最迷人的时刻'
+        '分享一个你童年最美好的回忆',
+        '说出三个你觉得最重要的品质',
+        '描述你理想中的完美一天',',
+        '告诉大家你最感谢的一个人',间',
+        '分享一个让你感动的故事',个习惯',
+        '说出你最想学会的技能'刻'
       ],
       dare: [
-        '深情凝视对方30秒不眨眼',
-        '用你的方式表达"我爱你"',
-        '为对方写一首即兴小诗',
-        '模仿我们第一次牵手的情景',
-        '说出10个关于对方的赞美',
-        '计划一个浪漫的惊喜行程'
+        '为大家表演一个才艺',眼',
+        '做一个你觉得最可爱的表情',
+        '模仿一种动物的叫声',,
+        '用三个词形容今天的心情',,
+        '做10个优雅的转圈',美',
+        '给大家讲一个有趣的笑话'
       ]
     }
   },
-  wild: {
-    name: "🌪️ 狂野挑战版", 
+  friend: {
+    name: "🤝 好友兄弟版",, 
     tasks: {
       truth: [
-        '说出你最大胆的一个梦想',
-        '分享你做过最疯狂的一件事',
-        '告诉我你最想挑战的极限运动',
-        '描述你理想中的冒险旅程',
+        '说出你最佩服朋友的三个特质',
+        '分享一次我们一起做过最疯狂的事',
+        '告诉我你觉得友情最重要的是什么',
+        '说出你最难忘的一次友谊经历',
         '说出你最想突破的一个恐惧',
         '分享一个你从未告诉过任何人的秘密'
       ],
@@ -273,53 +273,68 @@ const TASK_LIBRARIES = {
   }
 }
 
-// 创建固定的方形飞行棋棋盘 - 类似大富翁布局
-const createBoardPositions = () => {
+// 创建固定的方形飞行棋棋盘 - 支持任务格比例设置
+const createBoardPositions = (taskRatio = 0.3, totalPositions = 40) => {
   const positions = []
-  const totalPositions = 40 // 增加到40个格子，更像传统棋盘
-  const boardSize = 700 // 增大棋盘尺寸
-  const cellSize = 70 // 稍微缩小格子，避免重叠
-  const margin = 10 // 格子间距
-  
-  // 分四边排列格子：下边、右边、上边、左边
+  const boardSize = 600 // 棋盘总尺寸
+  const cellSize = 50 // 格子大小
+  const perSide = 10 // 每边10个格子
+  // 计算格子间距，确保完美适配
+  const availableSpace = boardSize - (2 * cellSize)
+  const spacing = availableSpace / (perSide - 2)
   for (let i = 0; i < totalPositions; i++) {
     let x, y, side
-    
-    if (i < 10) {
-      // 下边（从左到右）
+    if (i < perSide) {
       side = 'bottom'
-      x = i * (cellSize + margin) + margin
-      y = boardSize - cellSize - margin
-    } else if (i < 20) {
-      // 右边（从下到上）
+      if (i === 0) {
+        x = 0; y = boardSize - cellSize
+      } else if (i === perSide - 1) {
+        x = boardSize - cellSize; y = boardSize - cellSize
+      } else {
+        x = cellSize + (i - 1) * spacing; y = boardSize - cellSize
+      }
+    } else if (i < perSide * 2) {
       side = 'right'
-      x = boardSize - cellSize - margin
-      y = boardSize - cellSize - margin - (i - 10) * (cellSize + margin)
-    } else if (i < 30) {
-      // 上边（从右到左）
+      const rightIndex = i - perSide
+      if (rightIndex === 0) {
+        x = boardSize - cellSize; y = boardSize - cellSize
+      } else if (rightIndex === perSide - 1) {
+        x = boardSize - cellSize; y = 0
+      } else {
+        x = boardSize - cellSize; y = boardSize - cellSize - (rightIndex * spacing)
+      }
+    } else if (i < perSide * 3) {
       side = 'top'
-      x = boardSize - cellSize - margin - (i - 20) * (cellSize + margin)
-      y = margin
+      const topIndex = i - (perSide * 2)
+      if (topIndex === 0) {
+        x = boardSize - cellSize; y = 0
+      } else if (topIndex === perSide - 1) {
+        x = 0; y = 0
+      } else {
+        x = boardSize - cellSize - (topIndex * spacing); y = 0
+      }
     } else {
-      // 左边（从上到下）
       side = 'left'
-      x = margin
-      y = margin + (i - 30) * (cellSize + margin)
+      const leftIndex = i - (perSide * 3)
+      if (leftIndex === 0) {
+        x = 0; y = 0
+      } else if (leftIndex === perSide - 1) {
+        x = 0; y = boardSize - cellSize
+      } else {
+        x = 0; y = leftIndex * spacing
+      }
     }
-    
     positions.push({
       id: i,
-      x: x,
-      y: y,
+      x: Math.round(x),
+      y: Math.round(y),
       side: side,
-      isSpecial: i % 4 === 0 && i !== 0, // 每4格一个任务格
       isStart: i === 0,
       isFinish: i === totalPositions - 1,
-      hasTask: i % 3 === 0 || i % 4 === 0, // 更多格子有任务
-      tasks: null // 将在游戏开始时初始化
+      hasTask: false, // 任务格将在游戏开始时随机分配
+      tasks: null
     })
   }
-  
   return positions
 }
 
@@ -352,7 +367,7 @@ function SkyJourney() {
     currentPlayer: 'player1',
     diceValue: null,
     isRolling: false,
-    canRoll: false, // 需要先选择真心话或大冒险
+    canRoll: true, // 游戏开始时就可以掷骰子
     winner: null,
     turn: 0,
     totalPositions: 40, // 更新为40个格子
@@ -362,44 +377,91 @@ function SkyJourney() {
   })
   
   // 任务系统
-  const [currentTask, setCurrentTask] = useState(null)
-  const [taskTimeLeft, setTaskTimeLeft] = useState(0)
-  const [isTaskActive, setIsTaskActive] = useState(false)
-  const [selectedCell, setSelectedCell] = useState(null) // 查看任务时选中的格子
-  
+  const [currentTask, setCurrentTask] = useState(null);
+  const [taskTimeLeft, setTaskTimeLeft] = useState(0);
+  const [isTaskActive, setIsTaskActive] = useState(false);
+  const [isTimerStarted, setIsTimerStarted] = useState(false); // 计时器是否已开始
+  const [showTimerAnimation, setShowTimerAnimation] = useState(false); // 计时完成动画
+  const [showCompleteAnimation, setShowCompleteAnimation] = useState(false); // 完成任务动画
+  const [showSkipAnimation, setShowSkipAnimation] = useState(false); // 喝酒跳过动画
+  const [selectedCell, setSelectedCell] = useState(null); // 查看任务时选中的格子
+
+  // 任务动画与选择状态
+  const [showTaskCongrats, setShowTaskCongrats] = useState(false);
+  const [showTaskTypeSelect, setShowTaskTypeSelect] = useState(false);
+  const [justMoved, setJustMoved] = useState(false); // 标记是否刚刚移动过
+
+  // 任务格比例（可调节）
+  const [taskRatio, setTaskRatio] = useState(0.3); // 默认30%为任务格
+  const [totalPositions] = useState(40);
   // 棋盘位置
-  const boardPositions = createBoardPositions()
+  const [boardPositions, setBoardPositions] = useState(() => createBoardPositions(taskRatio, totalPositions));
   
-  // 任务倒计时
+  // 任务倒计时 - 修改：只有大冒险且计时器启动后才倒计时
   useEffect(() => {
-    if (isTaskActive && taskTimeLeft > 0) {
+    if (isTaskActive && isTimerStarted && taskTimeLeft > 0 && currentTask?.category === 'dare') {
       const timer = setTimeout(() => {
         setTaskTimeLeft(prev => prev - 1)
       }, 1000)
       return () => clearTimeout(timer)
-    } else if (taskTimeLeft === 0 && isTaskActive) {
-      setIsTaskActive(false)
-      setCurrentTask(null)
+    } else if (taskTimeLeft === 0 && isTaskActive && isTimerStarted && currentTask?.category === 'dare') {
+      // 计时完成，显示动画
+      setShowTimerAnimation(true)
+      setTimeout(() => {
+        setShowTimerAnimation(false)
+        setIsTaskActive(false)
+        setCurrentTask(null)
+        setIsTimerStarted(false)
+        switchPlayer()
+      }, 2000) // 动画显示2秒
     }
-  }, [taskTimeLeft, isTaskActive])
+  }, [taskTimeLeft, isTaskActive, isTimerStarted, currentTask])
 
-  // 初始化棋盘任务
+  // 修复：只有在刚移动完成后才检查任务格
+  useEffect(() => {
+    if (justMoved && !isTaskActive && !currentTask && !gameState.winner) {
+      const currentPlayerKey = gameState.currentPlayer
+      const currentPos = players[currentPlayerKey]?.position
+      const targetPosition = boardPositions[currentPos]
+      
+      if (targetPosition && (targetPosition.hasTask || targetPosition.isSpecial) && gameState.boardTasks?.[currentPos]) {
+        // 触发任务动画
+        setShowTaskCongrats(true)
+        setTimeout(() => {
+          setShowTaskCongrats(false)
+          setShowTaskTypeSelect(true)
+        }, 1200)
+      }
+      
+      // 重置移动标记
+      setJustMoved(false)
+    }
+  }, [justMoved, players, gameState, isTaskActive, currentTask, boardPositions])
+
+  // 初始化棋盘任务和任务格
   const initializeBoardTasks = () => {
+    // 1. 随机分配任务格
+    let positions = createBoardPositions(taskRatio, totalPositions)
+    // 除去起点和终点
+    const candidateIds = positions.filter(p => !p.isStart && !p.isFinish).map(p => p.id)
+    const taskCount = Math.max(1, Math.floor(candidateIds.length * taskRatio))
+    // 随机选出任务格id
+    const shuffled = [...candidateIds].sort(() => Math.random() - 0.5)
+    const taskIds = new Set(shuffled.slice(0, taskCount))
+    positions = positions.map(p => ({ ...p, hasTask: taskIds.has(p.id) }))
+    setBoardPositions(positions)
+    // 2. 为每个任务格分配任务
     const tasks = {}
-    
-    boardPositions.forEach(position => {
-      if (position.hasTask || position.isSpecial) {
-        // 为每个任务格子随机选择真心话和大冒险
+    positions.forEach(position => {
+      if (position.hasTask) {
         const truthTasks = TASK_LIBRARIES[selectedTaskType].tasks.truth
         const dareTasks = TASK_LIBRARIES[selectedTaskType].tasks.dare
-        
         tasks[position.id] = {
           truth: truthTasks[Math.floor(Math.random() * truthTasks.length)],
           dare: dareTasks[Math.floor(Math.random() * dareTasks.length)]
         }
       }
     })
-    
     setGameState(prev => ({ ...prev, boardTasks: tasks }))
   }
 
@@ -421,14 +483,30 @@ function SkyJourney() {
     setSelectedCell(null)
   }
 
-  // 换一换：重新为格子随机选择任务
+  // 换一换：重新为格子随机选择任务 - 确保不重复
   const regenerateCellTasks = (cellId) => {
+    const currentTasks = gameState.boardTasks[cellId]
+    if (!currentTasks) return
+    
     const truthTasks = TASK_LIBRARIES[selectedTaskType].tasks.truth
     const dareTasks = TASK_LIBRARIES[selectedTaskType].tasks.dare
     
+    // 过滤掉当前任务，确保选择不同的任务
+    const availableTruthTasks = truthTasks.filter(task => task !== currentTasks.truth)
+    const availableDareTasks = dareTasks.filter(task => task !== currentTasks.dare)
+    
+    // 如果没有其他任务可选，保持原任务
+    const newTruthTask = availableTruthTasks.length > 0 
+      ? availableTruthTasks[Math.floor(Math.random() * availableTruthTasks.length)]
+      : currentTasks.truth
+      
+    const newDareTask = availableDareTasks.length > 0
+      ? availableDareTasks[Math.floor(Math.random() * availableDareTasks.length)]
+      : currentTasks.dare
+    
     const newTasks = {
-      truth: truthTasks[Math.floor(Math.random() * truthTasks.length)],
-      dare: dareTasks[Math.floor(Math.random() * dareTasks.length)]
+      truth: newTruthTask,
+      dare: newDareTask
     }
     
     // 更新游戏状态中的棋盘任务
@@ -482,7 +560,6 @@ function SkyJourney() {
           情侣专属的浪漫飞行棋之旅
         </p>
       </div>
-      
       <div style={{
         background: 'rgba(255,255,255,0.15)',
         borderRadius: '20px',
@@ -496,7 +573,18 @@ function SkyJourney() {
         <h3 style={{ color: 'white', marginBottom: '30px', fontSize: '1.8rem' }}>
           选择任务类型
         </h3>
-        
+        {/* 任务格比例调节 */}
+        <div style={{ marginBottom: '20px', color: 'white', fontSize: '1.1rem' }}>
+          任务格比例：
+          <input
+            type="range"
+            min="0.1" max="0.7" step="0.05"
+            value={taskRatio}
+            onChange={e => setTaskRatio(Number(e.target.value))}
+            style={{ width: 180, verticalAlign: 'middle', margin: '0 10px' }}
+          />
+          <span style={{ fontWeight: 'bold', color: '#FFD700' }}>{Math.round(taskRatio * 100)}%</span>
+        </div>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
@@ -707,37 +795,42 @@ function SkyJourney() {
         >
           ⬅️ 返回
         </button>
-        
-        <button
-          style={{
-            background: 'linear-gradient(135deg, #4ECDC4, #44A08D)',
-            color: 'white',
-            border: 'none',
-            padding: '15px 40px',
-            borderRadius: '25px',
-            fontSize: '18px',
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
-          onClick={() => {
-            audioManager.current.playButtonSound()
-            // 确保玩家都有名字
-            const updatedPlayers = { ...players }
-            if (!updatedPlayers.player1.name) {
-              updatedPlayers.player1.name = generateNickname()
-            }
-            if (!updatedPlayers.player2.name) {
-              updatedPlayers.player2.name = generateNickname()
-            }
-            setPlayers(updatedPlayers)
-            setGameState(prev => ({ ...prev, canRoll: false })) // 需要先选择任务类型
-            // 初始化棋盘任务
-            initializeBoardTasks()
-            setGamePhase('playing')
-          }}
-        >
-          🎯 开始游戏
-        </button>
+  // 开始游戏按钮
+  <button
+    style={{
+      background: 'linear-gradient(135deg, #4ECDC4, #44A08D)',
+      color: 'white',
+      border: 'none',
+      padding: '15px 40px',
+      borderRadius: '25px',
+      fontSize: '18px',
+      cursor: 'pointer',
+      fontWeight: 'bold',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+      transition: 'transform 0.2s',
+    }}
+    onClick={() => {
+      audioManager.current.playButtonSound()
+      // 确保玩家都有名字
+      const updatedPlayers = { ...players }
+      if (!updatedPlayers.player1.name) {
+        updatedPlayers.player1.name = generateNickname()
+      }
+      if (!updatedPlayers.player2.name) {
+        updatedPlayers.player2.name = generateNickname()
+      }
+      setPlayers(updatedPlayers)
+      setGameState(prev => ({ ...prev, canRoll: true })) // 游戏开始时可以直接掷骰子
+      // 初始化棋盘任务和任务格
+      initializeBoardTasks()
+      setGamePhase('playing')
+    }}
+    onMouseDown={e => e.target.style.transform = 'scale(0.95)'}
+    onMouseUp={e => e.target.style.transform = 'scale(1)'}
+    onMouseLeave={e => e.target.style.transform = 'scale(1)'}
+  >
+    🎯 开始游戏
+  </button>
       </div>
     </div>
   )
@@ -767,37 +860,60 @@ function SkyJourney() {
     }, 100)
   }
 
-  // 移动玩家
+  // 移动玩家 - 添加逐格动画
   const movePlayer = (steps) => {
     const currentPlayerKey = gameState.currentPlayer
     const currentPos = players[currentPlayerKey].position
-    const newPos = Math.min(currentPos + steps, gameState.totalPositions - 1)
+    const finalPos = Math.min(currentPos + steps, gameState.totalPositions - 1)
     
-    setPlayers(prev => ({
-      ...prev,
-      [currentPlayerKey]: { ...prev[currentPlayerKey], position: newPos }
-    }))
+    // 播放移动音效
+    audioManager.current.playButtonSound()
     
-    // 检查是否到达终点
-    if (newPos >= gameState.totalPositions - 1) {
-      setGameState(prev => ({ ...prev, winner: currentPlayerKey }))
-      setGamePhase('finished')
-      return
-    }
-    
-    // 检查是否触发任务
-    const targetPosition = boardPositions[newPos]
-    if (targetPosition && targetPosition.isSpecial) {
-      // 延迟触发任务，确保移动动画完成
-      setTimeout(() => {
-        triggerTask()
-      }, 500)
-    } else {
-      // 切换到下一个玩家
-      setTimeout(() => {
-        switchPlayer()
-      }, 500)
-    }
+    // 逐格移动动画
+    let currentStep = 0
+    const moveInterval = setInterval(() => {
+      if (currentStep >= steps || currentPos + currentStep >= gameState.totalPositions - 1) {
+        clearInterval(moveInterval)
+        
+        // 移动完成后的逻辑
+        setPlayers(prev => ({
+          ...prev,
+          [currentPlayerKey]: { ...prev[currentPlayerKey], position: finalPos }
+        }))
+        
+        // 检查是否到达终点
+        if (finalPos >= gameState.totalPositions - 1) {
+          setGameState(prev => ({ ...prev, winner: currentPlayerKey }))
+          setGamePhase('finished')
+          return
+        }
+        
+        // 标记刚刚移动完成，触发任务检查
+        setJustMoved(true)
+        
+        // 检查是否触发任务的逻辑将在useEffect中处理
+        const targetPosition = boardPositions[finalPos]
+        if (!targetPosition || (!targetPosition.hasTask && !targetPosition.isSpecial)) {
+          // 如果不是任务格，直接切换玩家
+          setTimeout(() => {
+            switchPlayer()
+          }, 300)
+        }
+        return
+      }
+      
+      // 逐步移动
+      currentStep++
+      const nextPos = Math.min(currentPos + currentStep, gameState.totalPositions - 1)
+      setPlayers(prev => ({
+        ...prev,
+        [currentPlayerKey]: { ...prev[currentPlayerKey], position: nextPos }
+      }))
+      
+      // 播放移动音效
+      audioManager.current.playButtonSound()
+      
+    }, 400) // 每400ms移动一格
   }
 
   // 触发任务
@@ -826,7 +942,7 @@ function SkyJourney() {
       ...prev,
       currentPlayer: prev.currentPlayer === 'player1' ? 'player2' : 'player1',
       turn: prev.turn + 1,
-      canRoll: false, // 下一个玩家需要重新选择任务类型
+      canRoll: true, // 下一个玩家可以直接掷骰子
       selectedTaskCategory: null,
       canChangeTaskType: true
     }))
@@ -838,52 +954,86 @@ function SkyJourney() {
     setGameState(prev => ({
       ...prev,
       selectedTaskCategory: category,
-      canRoll: true,
-      canChangeTaskType: false // 选择后不能立即更改
+      canChangeTaskType: false
     }))
+    setShowTaskTypeSelect(false)
+    
+    // 直接触发任务，传入选择的类型
+    const currentPlayerKey = gameState.currentPlayer
+    const currentPos = players[currentPlayerKey].position
+    const cellTasks = gameState.boardTasks[currentPos]
+    
+    if (cellTasks) {
+      const taskText = cellTasks[category] // 直接使用传入的category
+      
+      setCurrentTask({
+        text: taskText,
+        category: category,
+        duration: 60
+      })
+      // 只有大冒险才设置倒计时，真心话不设置倒计时
+      setTaskTimeLeft(category === 'dare' ? 60 : 0)
+      setIsTaskActive(true)
+      setIsTimerStarted(false) // 初始状态下计时器未开始
+    }
   }
 
-  // 重新选择任务类型
-  const resetTaskCategory = () => {
-    audioManager.current.playButtonSound()
-    setGameState(prev => ({
-      ...prev,
-      selectedTaskCategory: null,
-      canRoll: false,
-      canChangeTaskType: true
-    }))
+  // 开始计时（仅大冒险任务）
+  const startTimer = () => {
+    if (currentTask?.category === 'dare') {
+      audioManager.current.playButtonSound()
+      setIsTimerStarted(true)
+    }
   }
 
   // 完成任务
   const completeTask = () => {
     audioManager.current.playButtonSound()
-    setIsTaskActive(false)
-    setCurrentTask(null)
-    switchPlayer()
+    setShowCompleteAnimation(true)
+    setTimeout(() => {
+      setShowCompleteAnimation(false)
+      setIsTaskActive(false)
+      setCurrentTask(null)
+      setIsTimerStarted(false)
+      switchPlayer()
+    }, 1500)
   }
 
   // 喝酒跳过任务（视为完成）
   const drinkAndSkip = () => {
-    audioManager.current.playButtonSound()
-    setIsTaskActive(false)
-    setCurrentTask(null)
-    // 视为完成任务，进入下一轮
-    switchPlayer()
+    audioManager.current.playDiceSound()
+    setShowSkipAnimation(true)
+    setTimeout(() => {
+      setShowSkipAnimation(false)
+      setIsTaskActive(false)
+      setCurrentTask(null)
+      setIsTimerStarted(false)
+      switchPlayer()
+    }, 1500)
   }
 
-  // 换任务
+  // 换任务 - 确保不会抽到相同任务
   const changeTask = () => {
     audioManager.current.playButtonSound()
-    setIsTaskActive(false)
-    setCurrentTask(null)
     
-    // 重新为当前格子生成新任务
+    if (!currentTask) return // 如果没有当前任务，直接返回
+    
     const currentPlayerKey = gameState.currentPlayer
     const currentPos = players[currentPlayerKey].position
-    const taskCategory = gameState.selectedTaskCategory
+    const taskCategory = currentTask.category // 使用当前任务的类别
+    const currentTaskText = currentTask.text // 当前任务内容
     
     const taskLibrary = TASK_LIBRARIES[selectedTaskType].tasks[taskCategory]
-    const newTask = taskLibrary[Math.floor(Math.random() * taskLibrary.length)]
+    // 过滤掉当前任务，从剩余任务中随机选择
+    const availableTasks = taskLibrary.filter(task => task !== currentTaskText)
+    
+    if (availableTasks.length === 0) {
+      // 如果没有其他任务可选，提示用户
+      alert('当前任务库中没有其他任务可选择了！')
+      return
+    }
+    
+    const newTask = availableTasks[Math.floor(Math.random() * availableTasks.length)]
     
     // 更新棋盘任务
     setGameState(prev => ({
@@ -897,10 +1047,22 @@ function SkyJourney() {
       }
     }))
     
-    // 重新触发任务
-    setTimeout(() => {
-      triggerTask()
-    }, 300)
+    // 直接更新当前任务，不需要重新触发
+    setCurrentTask({
+      text: newTask,
+      category: taskCategory,
+      duration: 60
+    })
+    
+    // 重置计时器状态 - 只有大冒险才重置倒计时
+    if (taskCategory === 'dare') {
+      setTaskTimeLeft(60)
+      setIsTimerStarted(false)
+    } else {
+      // 真心话不设置倒计时
+      setTaskTimeLeft(0)
+      setIsTimerStarted(false)
+    }
   }
 
   // 🗺️ 游戏棋盘组件
@@ -911,12 +1073,35 @@ function SkyJourney() {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      padding: '20px'
+      padding: '20px',
+      position: 'relative'
     }}>
       <h2 style={{ color: 'white', marginBottom: '20px', fontSize: '2rem' }}>
         ✈️ Sky Journey 飞行棋
       </h2>
-      
+      {/* 全局BGM控制按钮，始终显示且风格统一 */}
+      <div style={{ position: 'absolute', top: 20, right: 40, zIndex: 100 }}>
+        <button
+          style={{
+            background: audioManager.current.isBGMPlaying ? '#e74c3c' : '#27ae60',
+            color: 'white',
+            border: 'none',
+            padding: '10px 22px',
+            borderRadius: '20px',
+            fontSize: '18px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+          }}
+          onClick={() => {
+            audioManager.current.toggleBGM()
+            // 强制重新渲染
+            setGamePhase(prev => prev)
+          }}
+        >
+          {audioManager.current.isBGMPlaying ? '🔇 BGM' : '🔊 BGM'}
+        </button>
+      </div>
       {/* 当前玩家信息和控制 */}
       <div style={{
         background: 'rgba(255,255,255,0.15)',
@@ -929,7 +1114,9 @@ function SkyJourney() {
         textAlign: 'center',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        width: '650px',
+        maxWidth: '100%'
       }}>
         <div>
           <p style={{ fontSize: '1.2rem', margin: '0 0 10px 0' }}>
@@ -939,122 +1126,143 @@ function SkyJourney() {
             任务类型: {TASK_LIBRARIES[selectedTaskType].name}
           </p>
         </div>
-        
-        <div style={{ display: 'flex', gap: '10px' }}>
-          {/* BGM控制按钮 */}
-          {audioManager.current.isBGMEnabled() && (
-            <button
-              style={{
-                background: audioManager.current.isBGMPlaying ? '#e74c3c' : '#27ae60',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '15px',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
-              onClick={() => {
-                audioManager.current.toggleBGM()
-                setGameState(prev => ({ ...prev })) // 强制重新渲染
-              }}
-            >
-              {audioManager.current.isBGMPlaying ? '🔇' : '🔊'}
-            </button>
-          )}
-          
-          {/* 退出游戏按钮 */}
-          <button
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.3)',
-              padding: '8px 16px',
-              borderRadius: '15px',
-              fontSize: '14px',
-              cursor: 'pointer'
-            }}
-            onClick={() => {
-              audioManager.current.playButtonSound()
-              audioManager.current.stopBGM()
-              if (confirm('确定要退出游戏吗？')) {
-                setGamePhase('home')
-              }
-            }}
-          >
-            🏠 退出
-          </button>
-        </div>
+        <button
+          style={{
+            background: 'rgba(255,255,255,0.2)',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.3)',
+            padding: '8px 16px',
+            borderRadius: '15px',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+          onClick={() => {
+            audioManager.current.playButtonSound()
+            audioManager.current.stopBGM()
+            if (confirm('确定要退出游戏吗？')) {
+              setGamePhase('home')
+            }
+          }}
+        >
+          🏠 退出
+        </button>
       </div>
 
-      {/* 选择真心话/大冒险 */}
-      {(!gameState.canRoll || gameState.canChangeTaskType) && (
+      {/* 任务动画与选择弹窗 */}
+      {showTaskCongrats && (
         <div style={{
-          background: 'rgba(255,255,255,0.15)',
-          borderRadius: '15px',
-          padding: '20px',
-          marginBottom: '20px',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.2)',
-          textAlign: 'center'
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'auto',
+          animation: 'fadeIn 0.5s',
         }}>
-          <p style={{ color: 'white', marginBottom: '15px', fontSize: '1.1rem' }}>
-            选择你的挑战类型：
-          </p>
-          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '15px' }}>
-            <button
-              style={{
-                background: gameState.selectedTaskCategory === 'truth' 
-                  ? 'linear-gradient(135deg, #FF6B9D, #FF8E53)' 
-                  : 'rgba(255,255,255,0.3)',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '20px',
-                fontSize: '16px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                transform: gameState.selectedTaskCategory === 'truth' ? 'scale(1.05)' : 'scale(1)'
-              }}
-              onClick={() => selectTaskCategory('truth')}
-            >
-              💭 真心话
-            </button>
-            <button
-              style={{
-                background: gameState.selectedTaskCategory === 'dare' 
-                  ? 'linear-gradient(135deg, #4ECDC4, #44A08D)' 
-                  : 'rgba(255,255,255,0.3)',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '20px',
-                fontSize: '16px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                transform: gameState.selectedTaskCategory === 'dare' ? 'scale(1.05)' : 'scale(1)'
-              }}
-              onClick={() => selectTaskCategory('dare')}
-            >
-              🎪 大冒险
-            </button>
+          <div style={{
+            textAlign: 'center',
+            color: 'white',
+            fontSize: '2.5rem',
+            fontWeight: 'bold',
+            padding: '60px 40px',
+            borderRadius: '30px',
+            background: 'linear-gradient(135deg, #FFD700 0%, #FF6B9D 100%)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            🎉 恭喜你触发了任务！
+            <div style={{ fontSize: '1.5rem', marginTop: '20px' }}>准备迎接挑战吧！</div>
+            {/* 彩带动画 */}
+            <div style={{
+              position: 'absolute',
+              left: 0, right: 0, top: 0, height: '100%',
+              pointerEvents: 'none',
+              zIndex: 1
+            }}>
+              {[...Array(12)].map((_, i) => (
+                <div key={i} style={{
+                  position: 'absolute',
+                  left: `${8 + i * 7}%`,
+                  top: '-40px',
+                  width: '18px',
+                  height: '80px',
+                  background: `linear-gradient(135deg, #${Math.floor(Math.random()*16777215).toString(16)} 0%, #${Math.floor(Math.random()*16777215).toString(16)} 100%)`,
+                  borderRadius: '10px',
+                  opacity: 0.7,
+                  transform: `rotate(${Math.random()*60-30}deg)`,
+                  animation: `confetti-fall 1.2s cubic-bezier(.6,.2,.4,1) forwards`,
+                  animationDelay: `${i*0.08}s`
+                }} />
+              ))}
+            </div>
           </div>
-          
-          {gameState.selectedTaskCategory && !gameState.canChangeTaskType && (
-            <button
-              style={{
-                background: 'rgba(255,255,255,0.2)',
-                color: 'white',
-                border: '1px solid rgba(255,255,255,0.3)',
-                padding: '8px 16px',
-                borderRadius: '15px',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
-              onClick={resetTaskCategory}
-            >
-              🔄 重新选择
-            </button>
-          )}
+          <style>{`
+            @keyframes confetti-fall {
+              0% { top: -40px; opacity: 0.7; }
+              80% { opacity: 1; }
+              100% { top: 120px; opacity: 0; }
+            }
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
+      {showTaskTypeSelect && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'auto',
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '25px',
+            padding: '40px 30px',
+            textAlign: 'center',
+            minWidth: '320px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: '20px', color: '#764ba2' }}>请选择挑战类型</div>
+            <div style={{ display: 'flex', gap: '30px', justifyContent: 'center' }}>
+              <button
+                style={{
+                  background: 'linear-gradient(135deg, #FF6B9D, #FF8E53)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '18px 36px',
+                  borderRadius: '20px',
+                  fontSize: '1.2rem',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.12)'
+                }}
+                onClick={() => selectTaskCategory('truth')}
+              >💭 真心话</button>
+              <button
+                style={{
+                  background: 'linear-gradient(135deg, #4ECDC4, #44A08D)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '18px 36px',
+                  borderRadius: '20px',
+                  fontSize: '1.2rem',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.12)'
+                }}
+                onClick={() => selectTaskCategory('dare')}
+              >🎪 大冒险</button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1103,25 +1311,25 @@ function SkyJourney() {
         )}
       </div>
 
-      {/* 方形飞行棋棋盘 */}
+      {/* 方形飞行棋棋盘 - 优化版 */}
       <div style={{
         position: 'relative',
-        width: '620px',
-        height: '620px',
+        width: '650px',
+        height: '650px',
         background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
         borderRadius: '20px',
         border: '3px solid rgba(255,255,255,0.3)',
         backdropFilter: 'blur(20px)',
         margin: '0 auto',
-        padding: '10px'
+        padding: '25px'
       }}>
         {/* 中央区域 */}
         <div style={{
           position: 'absolute',
-          top: '90px',
-          left: '90px',
-          width: '420px',
-          height: '420px',
+          top: '75px',
+          left: '75px',
+          width: '450px',
+          height: '450px',
           background: 'rgba(255,255,255,0.1)',
           borderRadius: '15px',
           display: 'flex',
@@ -1155,9 +1363,9 @@ function SkyJourney() {
                 position: 'absolute',
                 left: position.x,
                 top: position.y,
-                width: '70px',
-                height: '70px',
-                borderRadius: '10px',
+                width: '50px',
+                height: '50px',
+                borderRadius: '8px',
                 background: position.isStart 
                   ? 'linear-gradient(135deg, #4ECDC4, #44A08D)'
                   : position.isFinish 
@@ -1165,15 +1373,15 @@ function SkyJourney() {
                   : hasTask
                   ? 'linear-gradient(135deg, #FF6B9D, #FF8E53)'
                   : 'linear-gradient(135deg, #667eea, #764ba2)',
-                border: isPlayerHere ? '4px solid #FFD700' : '2px solid white',
+                border: isPlayerHere ? '3px solid #FFD700' : '2px solid white',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '11px',
+                fontSize: '10px',
                 color: 'white',
                 fontWeight: 'bold',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                boxShadow: '0 3px 10px rgba(0,0,0,0.3)',
                 cursor: hasTask ? 'pointer' : 'default',
                 transition: 'all 0.3s ease',
                 zIndex: 5
@@ -1181,57 +1389,57 @@ function SkyJourney() {
               onClick={() => hasTask && onCellClick(position)}
               onMouseEnter={(e) => {
                 if (hasTask) {
-                  e.target.style.transform = 'scale(1.05)'
-                  e.target.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)'
+                  e.target.style.transform = 'scale(1.1)'
+                  e.target.style.boxShadow = '0 5px 15px rgba(0,0,0,0.4)'
                 }
               }}
               onMouseLeave={(e) => {
                 if (hasTask) {
                   e.target.style.transform = 'scale(1)'
-                  e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)'
+                  e.target.style.boxShadow = '0 3px 10px rgba(0,0,0,0.3)'
                 }
               }}
             >
-              <div style={{ fontSize: '14px', marginBottom: '2px' }}>
+              <div style={{ fontSize: '12px', marginBottom: '2px' }}>
                 {position.isStart ? '🏠' : 
                  position.isFinish ? '🏁' : 
                  hasTask ? '💝' : 
                  '⭐'}
               </div>
-              <div style={{ fontSize: '9px' }}>{index}</div>
+              <div style={{ fontSize: '8px' }}>{index}</div>
             </div>
           )
         })}
 
-        {/* 玩家棋子 */}
+        {/* 玩家棋子 - 优化位置和动画 */}
         {Object.entries(players).map(([playerId, player]) => {
           const position = boardPositions[player.position]
           if (!position) return null
           
           // 计算玩家在格子内的偏移位置，避免重叠
-          const offsetX = playerId === 'player1' ? -12 : 12
-          const offsetY = playerId === 'player1' ? -12 : 12
+          const offsetX = playerId === 'player1' ? -8 : 8
+          const offsetY = playerId === 'player1' ? -8 : 8
           
           return (
             <div
               key={playerId}
               style={{
                 position: 'absolute',
-                left: position.x + 35 + offsetX,
-                top: position.y + 35 + offsetY,
-                width: '30px',
-                height: '30px',
+                left: position.x + 25 + offsetX,
+                top: position.y + 25 + offsetY,
+                width: '25px',
+                height: '25px',
                 borderRadius: '50%',
                 background: player.color,
                 border: gameState.currentPlayer === playerId ? '3px solid #FFD700' : '2px solid white',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '16px',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                fontSize: '14px',
+                boxShadow: '0 3px 12px rgba(0,0,0,0.4)',
                 animation: gameState.currentPlayer === playerId ? 'pulse 1.5s infinite' : 'none',
                 zIndex: 20,
-                transition: 'all 0.5s ease'
+                transition: 'left 0.4s ease, top 0.4s ease, transform 0.2s ease'
               }}
             >
               {player.avatar}
@@ -1249,13 +1457,22 @@ function SkyJourney() {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.1); }
         }
+        @keyframes jump {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+        .player-moving {
+          animation: jump 0.4s ease-in-out !important;
+        }
       `}</style>
     </div>
   )
 
-  // 🎪 任务弹窗
+  // 🎪 任务弹窗（真心话和大冒险不同背景色，优化计时器）
   const TaskModal = () => {
     if (!currentTask) return null
+    const isTruth = currentTask.category === 'truth'
+    const isDare = currentTask.category === 'dare'
     
     return (
       <div style={{
@@ -1271,23 +1488,24 @@ function SkyJourney() {
         zIndex: 1000
       }}>
         <div style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: isTruth
+            ? 'linear-gradient(135deg, #FF6B9D 0%, #FF8E53 100%)'
+            : 'linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)',
           borderRadius: '20px',
           padding: '40px',
           maxWidth: '500px',
           width: '90%',
           textAlign: 'center',
           color: 'white',
-          border: '2px solid rgba(255,255,255,0.3)'
+          border: '2px solid rgba(255,255,255,0.3)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
         }}>
           <div style={{ fontSize: '3rem', marginBottom: '20px' }}>
-            {currentTask.category === 'truth' ? '💭' : '🎪'}
+            {isTruth ? '💭' : '🎪'}
           </div>
-          
           <h3 style={{ marginBottom: '20px', fontSize: '1.5rem' }}>
-            {currentTask.category === 'truth' ? '真心话时间' : '大冒险时间'}
+            {isTruth ? '真心话时间' : '大冒险时间'}
           </h3>
-          
           <div style={{
             background: 'rgba(255,255,255,0.2)',
             borderRadius: '15px',
@@ -1299,11 +1517,42 @@ function SkyJourney() {
             {currentTask.text}
           </div>
           
-          <div style={{ fontSize: '1.5rem', marginBottom: '25px' }}>
-            ⏰ {Math.floor(taskTimeLeft / 60)}:{(taskTimeLeft % 60).toString().padStart(2, '0')}
-          </div>
+          {/* 计时器区域 - 只有大冒险显示 */}
+          {isDare && (
+            <div style={{ marginBottom: '25px' }}>
+              {!isTimerStarted ? (
+                <button
+                  style={{
+                    background: 'rgba(255,255,255,0.3)',
+                    color: 'white',
+                    border: '2px solid white',
+                    padding: '12px 25px',
+                    borderRadius: '20px',
+                    fontSize: '16px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onClick={startTimer}
+                  onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.5)'}
+                  onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
+                >
+                  ⏰ 点击开始计时
+                </button>
+              ) : (
+                <div style={{ 
+                  fontSize: '2rem', 
+                  fontWeight: 'bold',
+                  color: taskTimeLeft <= 10 ? '#ff4444' : 'white',
+                  animation: taskTimeLeft <= 10 ? 'pulse 1s infinite' : 'none'
+                }}>
+                  ⏰ {Math.floor(taskTimeLeft / 60)}:{(taskTimeLeft % 60).toString().padStart(2, '0')}
+                </div>
+              )}
+            </div>
+          )}
           
-          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
               style={{
                 background: 'linear-gradient(135deg, #4ECDC4, #44A08D)',
@@ -1462,7 +1711,7 @@ function SkyJourney() {
     )
   }
 
-  // 🏆 胜利页面
+  // 🏆 胜利页面（动画增强）
   const VictoryPage = () => (
     <div style={{
       minHeight: '100vh',
@@ -1473,39 +1722,57 @@ function SkyJourney() {
       justifyContent: 'center',
       fontFamily: 'Arial, sans-serif',
       textAlign: 'center',
-      animation: 'celebrate 2s ease-in-out infinite alternate'
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      <div style={{ fontSize: '6rem', marginBottom: '20px' }}>🏆</div>
-      
+      {/* 彩带动画 */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}>
+        {[...Array(18)].map((_, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            left: `${5 + i * 5}%`,
+            top: '-60px',
+            width: '22px',
+            height: '120px',
+            background: `linear-gradient(135deg, #${Math.floor(Math.random()*16777215).toString(16)} 0%, #${Math.floor(Math.random()*16777215).toString(16)} 100%)`,
+            borderRadius: '12px',
+            opacity: 0.8,
+            transform: `rotate(${Math.random()*60-30}deg)`,
+            animation: `confetti-fall-victory 1.8s cubic-bezier(.6,.2,.4,1) forwards`,
+            animationDelay: `${i*0.09}s`
+          }} />
+        ))}
+      </div>
+      <div style={{ fontSize: '6rem', marginBottom: '20px', zIndex: 2 }}>🏆</div>
       <h1 style={{
         fontSize: '3rem',
         color: 'white',
         marginBottom: '20px',
-        textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+        textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+        zIndex: 2
       }}>
-        恭喜胜利！
+        🎉 恭喜胜利！
       </h1>
-      
       <div style={{
         fontSize: '2rem',
         marginBottom: '30px',
-        color: 'white'
+        color: 'white',
+        zIndex: 2
       }}>
         {players[gameState.winner].avatar} {players[gameState.winner].name} 获得胜利！
       </div>
-      
       <div style={{
         background: 'rgba(255,255,255,0.2)',
         borderRadius: '20px',
         padding: '30px',
         marginBottom: '30px',
-        backdropFilter: 'blur(20px)'
+        backdropFilter: 'blur(20px)',
+        zIndex: 2
       }}>
         <h3 style={{ color: 'white', marginBottom: '15px' }}>🎮 游戏统计</h3>
         <p style={{ color: 'white', margin: '5px 0' }}>总回合数: {gameState.turn}</p>
         <p style={{ color: 'white', margin: '5px 0' }}>使用任务库: {TASK_LIBRARIES[selectedTaskType].name}</p>
       </div>
-      
       <button
         style={{
           background: 'linear-gradient(135deg, #667eea, #764ba2)',
@@ -1515,7 +1782,8 @@ function SkyJourney() {
           borderRadius: '25px',
           fontSize: '18px',
           cursor: 'pointer',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          zIndex: 2
         }}
         onClick={() => {
           audioManager.current.playButtonSound()
@@ -1526,7 +1794,7 @@ function SkyJourney() {
             currentPlayer: 'player1',
             diceValue: null,
             isRolling: false,
-            canRoll: false,
+            canRoll: true,
             winner: null,
             turn: 0,
             totalPositions: 40,
@@ -1545,11 +1813,11 @@ function SkyJourney() {
       >
         🔄 再来一局
       </button>
-      
       <style>{`
-        @keyframes celebrate {
-          0% { transform: scale(1) rotate(0deg); }
-          100% { transform: scale(1.05) rotate(2deg); }
+        @keyframes confetti-fall-victory {
+          0% { top: -60px; opacity: 0.8; }
+          80% { opacity: 1; }
+          100% { top: 180px; opacity: 0; }
         }
       `}</style>
     </div>
@@ -1568,6 +1836,179 @@ function SkyJourney() {
       
       {/* 格子任务预览弹窗 */}
       {selectedCell && <CellPreviewModal />}
+      
+      {/* 计时完成动画 */}
+      {showTimerAnimation && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.8)',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          animation: 'fadeIn 0.5s'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            color: 'white',
+            fontSize: '3rem',
+            fontWeight: 'bold',
+            padding: '60px 40px',
+            borderRadius: '30px',
+            background: 'linear-gradient(135deg, #FF4444 0%, #FF8888 100%)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            position: 'relative',
+            overflow: 'hidden',
+            animation: 'pulse 0.8s ease-in-out infinite alternate'
+          }}>
+            ⏰ 时间到！
+            <div style={{ fontSize: '1.5rem', marginTop: '20px' }}>任务时间已结束</div>
+            {/* 爆炸动画效果 */}
+            {[...Array(8)].map((_, i) => (
+              <div key={i} style={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                width: '20px',
+                height: '20px',
+                background: '#FFD700',
+                borderRadius: '50%',
+                transform: `translate(-50%, -50%) rotate(${i * 45}deg) translateY(-60px)`,
+                animation: `explosion 1.5s ease-out forwards`,
+                animationDelay: `${i * 0.1}s`
+              }} />
+            ))}
+          </div>
+          <style>{`
+            @keyframes explosion {
+              0% { transform: translate(-50%, -50%) rotate(0deg) translateY(0px); opacity: 1; }
+              100% { transform: translate(-50%, -50%) rotate(0deg) translateY(-120px); opacity: 0; }
+            }
+          `}</style>
+        </div>
+      )}
+      {/* 完成任务动画 */}
+      {showCompleteAnimation && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          animation: 'fadeIn 0.5s'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            color: '#FFD700',
+            fontSize: '3rem',
+            fontWeight: 'bold',
+            padding: '60px 40px',
+            borderRadius: '30px',
+            background: 'linear-gradient(135deg, #FFFACD 0%, #FFD700 100%)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            position: 'relative',
+            overflow: 'hidden',
+            animation: 'bounceIn 0.8s'
+          }}>
+            🎉 完成任务！
+            <div style={{ fontSize: '1.5rem', marginTop: '20px', color: '#333' }}>奖励一枚小星星！</div>
+            {/* 星星动画 */}
+            {[...Array(10)].map((_, i) => (
+              <div key={i} style={{
+                position: 'absolute',
+                left: `${30 + Math.random()*40}%`,
+                top: `${30 + Math.random()*40}%`,
+                width: '18px',
+                height: '18px',
+                background: 'yellow',
+                borderRadius: '50%',
+                boxShadow: '0 0 12px 4px #FFD700',
+                opacity: 0.8,
+                animation: `star-pop 1.2s cubic-bezier(.6,.2,.4,1) forwards`,
+                animationDelay: `${i*0.07}s`,
+                zIndex: 2
+              }} />
+            ))}
+          </div>
+          <style>{`
+            @keyframes bounceIn {
+              0% { transform: scale(0.5); opacity: 0; }
+              60% { transform: scale(1.1); opacity: 1; }
+              100% { transform: scale(1); opacity: 1; }
+            }
+            @keyframes star-pop {
+              0% { opacity: 0; transform: scale(0.2); }
+              60% { opacity: 1; transform: scale(1.2); }
+              100% { opacity: 0; transform: scale(0.8) translateY(-60px); }
+            }
+          `}</style>
+        </div>
+      )}
+      {/* 喝酒跳过动画 */}
+      {showSkipAnimation && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          animation: 'fadeIn 0.5s'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            color: '#fff',
+            fontSize: '3rem',
+            fontWeight: 'bold',
+            padding: '60px 40px',
+            borderRadius: '30px',
+            background: 'linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            position: 'relative',
+            overflow: 'hidden',
+            animation: 'shake 0.8s'
+          }}>
+            🍻 喝一口酒跳过！
+            <div style={{ fontSize: '1.5rem', marginTop: '20px', color: '#FFD700' }}>下次加油！</div>
+            {/* 酒杯动画 */}
+            {[...Array(6)].map((_, i) => (
+              <div key={i} style={{
+                position: 'absolute',
+                left: `${40 + Math.random()*20}%`,
+                top: `${40 + Math.random()*20}%`,
+                width: '22px',
+                height: '22px',
+                background: 'linear-gradient(135deg, #fffbe7 60%, #FFD700 100%)',
+                borderRadius: '6px 6px 12px 12px',
+                border: '2px solid #FFD700',
+                opacity: 0.9,
+                animation: `cup-pop 1.2s cubic-bezier(.6,.2,.4,1) forwards`,
+                animationDelay: `${i*0.09}s`,
+                zIndex: 2
+              }} />
+            ))}
+          </div>
+          <style>{`
+            @keyframes shake {
+              0% { transform: rotate(-8deg); }
+              20% { transform: rotate(8deg); }
+              40% { transform: rotate(-6deg); }
+              60% { transform: rotate(6deg); }
+              80% { transform: rotate(-3deg); }
+              100% { transform: rotate(0deg); }
+            }
+            @keyframes cup-pop {
+              0% { opacity: 0; transform: scale(0.2); }
+              60% { opacity: 1; transform: scale(1.2); }
+              100% { opacity: 0; transform: scale(0.8) translateY(-60px); }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,69 +1,37 @@
 {
   "name": "sky-journey-for-two",
+  "private": true,
   "version": "1.0.0",
-  "description": "🎮 情侣专属轻松飞行棋游戏 - 支持本地和在线对战，包含真心话大冒险等互动元素",
+  "type": "module",
+  "description": "情侣专属的浪漫飞行棋网页游戏",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.3",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "vite": "^4.4.5"
+  },
   "keywords": [
     "game",
     "couples",
-    "board-game",
-    "multiplayer",
-    "websocket",
+    "flying-chess",
     "react",
-    "nodejs",
-    "飞行棋",
-    "情侣游戏"
+    "vite",
+    "romance"
   ],
   "author": "Sky Journey Team",
-  "license": "MIT",
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
-  "scripts": {
-    "install:all": "npm run install:server && npm run install:client && npm run install:admin",
-    "install:server": "cd server && npm install",
-    "install:client": "cd client && npm install", 
-    "install:admin": "cd admin && npm install",
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\" \"npm run dev:admin\"",
-    "dev:server": "cd server && npm run dev",
-    "dev:client": "cd client && npm run dev",
-    "dev:admin": "cd admin && npm run dev",
-    "build": "npm run build:client && npm run build:admin",
-    "build:client": "cd client && npm run build",
-    "build:admin": "cd admin && npm run build",
-    "start": "cd server && npm start",
-    "start:prod": "NODE_ENV=production cd server && npm start",
-    "lint": "npm run lint:client && npm run lint:admin && npm run lint:server",
-    "lint:client": "cd client && npm run lint",
-    "lint:admin": "cd admin && npm run lint",
-    "lint:server": "cd server && npm run lint",
-    "test": "npm run test:client && npm run test:admin && npm run test:server",
-    "test:client": "cd client && npm run test",
-    "test:admin": "cd admin && npm run test",
-    "test:server": "cd server && npm run test",
-    "clean": "npm run clean:client && npm run clean:admin && npm run clean:server",
-    "clean:client": "cd client && rm -rf node_modules dist .vite",
-    "clean:admin": "cd admin && rm -rf node_modules dist .vite",
-    "clean:server": "cd server && rm -rf node_modules",
-    "docker:build": "docker-compose build",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  },
-  "workspaces": [
-    "server",
-    "client", 
-    "admin"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yourusername/sky-journey-for-two.git"
-  },
-  "bugs": {
-    "url": "https://github.com/yourusername/sky-journey-for-two/issues"
-  },
-  "homepage": "https://github.com/yourusername/sky-journey-for-two#readme"
+  "license": "MIT"
 }
