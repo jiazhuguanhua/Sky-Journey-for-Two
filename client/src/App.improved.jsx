@@ -277,9 +277,9 @@ const TASK_LIBRARIES = {
 const createBoardPositions = () => {
   const positions = []
   const totalPositions = 40 // 增加到40个格子，更像传统棋盘
-  const boardSize = 600
-  const cellSize = 80
-  const innerSize = boardSize - cellSize * 2
+  const boardSize = 700 // 增大棋盘尺寸
+  const cellSize = 70 // 稍微缩小格子，避免重叠
+  const margin = 10 // 格子间距
   
   // 分四边排列格子：下边、右边、上边、左边
   for (let i = 0; i < totalPositions; i++) {
@@ -288,23 +288,23 @@ const createBoardPositions = () => {
     if (i < 10) {
       // 下边（从左到右）
       side = 'bottom'
-      x = i * cellSize
-      y = boardSize - cellSize
+      x = i * (cellSize + margin) + margin
+      y = boardSize - cellSize - margin
     } else if (i < 20) {
       // 右边（从下到上）
       side = 'right'
-      x = boardSize - cellSize
-      y = boardSize - cellSize - (i - 10) * cellSize
+      x = boardSize - cellSize - margin
+      y = boardSize - cellSize - margin - (i - 10) * (cellSize + margin)
     } else if (i < 30) {
       // 上边（从右到左）
       side = 'top'
-      x = boardSize - cellSize - (i - 20) * cellSize
-      y = 0
+      x = boardSize - cellSize - margin - (i - 20) * (cellSize + margin)
+      y = margin
     } else {
       // 左边（从上到下）
       side = 'left'
-      x = 0
-      y = (i - 30) * cellSize
+      x = margin
+      y = margin + (i - 30) * (cellSize + margin)
     }
     
     positions.push({
@@ -419,6 +419,37 @@ function SkyJourney() {
   // 关闭任务预览
   const closeCellPreview = () => {
     setSelectedCell(null)
+  }
+
+  // 换一换：重新为格子随机选择任务
+  const regenerateCellTasks = (cellId) => {
+    const truthTasks = TASK_LIBRARIES[selectedTaskType].tasks.truth
+    const dareTasks = TASK_LIBRARIES[selectedTaskType].tasks.dare
+    
+    const newTasks = {
+      truth: truthTasks[Math.floor(Math.random() * truthTasks.length)],
+      dare: dareTasks[Math.floor(Math.random() * dareTasks.length)]
+    }
+    
+    // 更新游戏状态中的棋盘任务
+    setGameState(prev => ({
+      ...prev,
+      boardTasks: {
+        ...prev.boardTasks,
+        [cellId]: newTasks
+      }
+    }))
+    
+    // 更新当前预览的任务
+    if (selectedCell && selectedCell.position.id === cellId) {
+      setSelectedCell(prev => ({
+        ...prev,
+        tasks: newTasks
+      }))
+    }
+    
+    // 播放音效
+    audioManager.current.playButtonSound()
   }
 
   // 🏠 主页组件
@@ -1124,8 +1155,8 @@ function SkyJourney() {
                 position: 'absolute',
                 left: position.x,
                 top: position.y,
-                width: '80px',
-                height: '80px',
+                width: '70px',
+                height: '70px',
                 borderRadius: '10px',
                 background: position.isStart 
                   ? 'linear-gradient(135deg, #4ECDC4, #44A08D)'
@@ -1139,7 +1170,7 @@ function SkyJourney() {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '12px',
+                fontSize: '11px',
                 color: 'white',
                 fontWeight: 'bold',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
@@ -1161,13 +1192,13 @@ function SkyJourney() {
                 }
               }}
             >
-              <div style={{ fontSize: '16px', marginBottom: '2px' }}>
-                {position.isStart ? '�' : 
+              <div style={{ fontSize: '14px', marginBottom: '2px' }}>
+                {position.isStart ? '🏠' : 
                  position.isFinish ? '🏁' : 
-                 hasTask ? '�' : 
+                 hasTask ? '💝' : 
                  '⭐'}
               </div>
-              <div style={{ fontSize: '10px' }}>{index}</div>
+              <div style={{ fontSize: '9px' }}>{index}</div>
             </div>
           )
         })}
@@ -1178,25 +1209,25 @@ function SkyJourney() {
           if (!position) return null
           
           // 计算玩家在格子内的偏移位置，避免重叠
-          const offsetX = playerId === 'player1' ? -15 : 15
-          const offsetY = playerId === 'player1' ? -15 : 15
+          const offsetX = playerId === 'player1' ? -12 : 12
+          const offsetY = playerId === 'player1' ? -12 : 12
           
           return (
             <div
               key={playerId}
               style={{
                 position: 'absolute',
-                left: position.x + 40 + offsetX,
-                top: position.y + 40 + offsetY,
-                width: '35px',
-                height: '35px',
+                left: position.x + 35 + offsetX,
+                top: position.y + 35 + offsetY,
+                width: '30px',
+                height: '30px',
                 borderRadius: '50%',
                 background: player.color,
                 border: gameState.currentPlayer === playerId ? '3px solid #FFD700' : '2px solid white',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '18px',
+                fontSize: '16px',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
                 animation: gameState.currentPlayer === playerId ? 'pulse 1.5s infinite' : 'none',
                 zIndex: 20,
@@ -1389,20 +1420,43 @@ function SkyJourney() {
             </div>
           </div>
           
-          <button
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.3)',
-              padding: '10px 25px',
-              borderRadius: '20px',
-              fontSize: '16px',
-              cursor: 'pointer'
-            }}
-            onClick={closeCellPreview}
-          >
-            ✖️ 关闭
-          </button>
+          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+            <button
+              style={{
+                background: 'linear-gradient(135deg, #FF6B9D, #FF8E53)',
+                color: 'white',
+                border: 'none',
+                padding: '12px 25px',
+                borderRadius: '20px',
+                fontSize: '16px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onClick={() => regenerateCellTasks(selectedCell.position.id)}
+              onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+            >
+              🔄 换一换
+            </button>
+            
+            <button
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                color: 'white',
+                border: '1px solid rgba(255,255,255,0.3)',
+                padding: '12px 25px',
+                borderRadius: '20px',
+                fontSize: '16px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onClick={closeCellPreview}
+              onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+            >
+              ✖️ 关闭
+            </button>
+          </div>
         </div>
       </div>
     )
