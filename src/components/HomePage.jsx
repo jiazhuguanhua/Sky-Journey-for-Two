@@ -6,7 +6,8 @@ const HomePage = ({
   setSelectedTaskType, 
   taskRatio, 
   setTaskRatio, 
-  onStartGame,
+  onStartGame, 
+  onOpenTaskEditor,
   playButtonSound 
 }) => {
   return (
@@ -125,23 +126,48 @@ const HomePage = ({
         </div>
         
         {/* 开始游戏按钮 */}
-        <button
-          className="btn btn-success"
-          style={{
-            fontSize: '18px',
-            padding: '15px 40px',
-            borderRadius: '25px',
-          }}
-          onClick={() => {
-            playButtonSound();
-            onStartGame();
-          }}
-          onMouseDown={e => e.target.style.transform = 'scale(0.95)'}
-          onMouseUp={e => e.target.style.transform = 'scale(1)'}
-          onMouseLeave={e => e.target.style.transform = 'scale(1)'}
-        >
-          🎯 开始游戏
-        </button>
+        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button
+            className="btn btn-success animate-pulse"
+            style={{
+              fontSize: '18px',
+              padding: '15px 40px',
+              borderRadius: '25px',
+            }}
+            onClick={() => {
+              playButtonSound();
+              onStartGame();
+            }}
+            onMouseDown={e => e.target.style.transform = 'scale(0.95)'}
+            onMouseUp={e => e.target.style.transform = 'scale(1)'}
+            onMouseLeave={e => e.target.style.transform = 'scale(1)'}
+          >
+            🎯 开始游戏
+          </button>
+          
+          <button
+            className="btn animate-glow"
+            style={{
+              fontSize: '16px',
+              padding: '15px 30px',
+              borderRadius: '25px',
+              background: 'linear-gradient(135deg, #9C27B0, #673AB7)',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onClick={() => {
+              playButtonSound();
+              onOpenTaskEditor();
+            }}
+            onMouseDown={e => e.target.style.transform = 'scale(0.95)'}
+            onMouseUp={e => e.target.style.transform = 'scale(1)'}
+            onMouseLeave={e => e.target.style.transform = 'scale(1)'}
+          >
+            📝 任务编辑器
+          </button>
+        </div>
       </div>
     </div>
   );

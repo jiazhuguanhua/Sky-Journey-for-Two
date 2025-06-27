@@ -41,8 +41,8 @@ const VictoryPage = ({ gameState, players, selectedTaskType, onRestart, playButt
       ))}
     </div>
     
-    <div style={{ fontSize: '6rem', marginBottom: '20px', zIndex: 2 }}>🏆</div>
-    <h1 style={{
+    <div className="animate-heartbeat" style={{ fontSize: '6rem', marginBottom: '20px', zIndex: 2 }}>🏆</div>
+    <h1 className="animate-rubber victory-celebration" style={{
       fontSize: '3rem',
       color: 'white',
       marginBottom: '20px',

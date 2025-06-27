@@ -30,15 +30,29 @@ const GameBoard = ({
       {/* 全局BGM控制按钮 */}
       <div style={{ position: 'absolute', top: 20, right: 40, zIndex: 100 }}>
         <button
-          className="btn"
+          className="btn animate-float"
           style={{
             background: isBGMPlaying ? '#e74c3c' : '#27ae60',
             padding: '10px 22px',
-            fontSize: '18px'
+            fontSize: '18px',
+            border: 'none',
+            borderRadius: '25px',
+            color: 'white',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
           }}
           onClick={() => {
             playButtonSound();
             toggleBGM();
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'scale(1.1)';
+            e.target.classList.add('animate-pulse');
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'scale(1)';
+            e.target.classList.remove('animate-pulse');
           }}
         >
           {isBGMPlaying ? '🔇 BGM' : '🔊 BGM'}

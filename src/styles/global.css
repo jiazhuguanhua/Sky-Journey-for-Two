@@ -222,3 +222,134 @@ body {
     font-size: 14px;
   }
 }
+
+/* 更多动画效果 */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-15px); }
+  60% { transform: translateY(-7px); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.6); }
+}
+
+@keyframes rotate360 {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes rubber {
+  0% { transform: scale3d(1, 1, 1); }
+  30% { transform: scale3d(1.25, 0.75, 1); }
+  40% { transform: scale3d(0.75, 1.25, 1); }
+  50% { transform: scale3d(1.15, 0.85, 1); }
+  65% { transform: scale3d(0.95, 1.05, 1); }
+  75% { transform: scale3d(1.05, 0.95, 1); }
+  100% { transform: scale3d(1, 1, 1); }
+}
+
+@keyframes jello {
+  11.1%, 100% { transform: translate3d(0, 0, 0); }
+  22.2% { transform: skewX(-12.5deg) skewY(-12.5deg); }
+  33.3% { transform: skewX(6.25deg) skewY(6.25deg); }
+  44.4% { transform: skewX(-3.125deg) skewY(-3.125deg); }
+  55.5% { transform: skewX(1.5625deg) skewY(1.5625deg); }
+  66.6% { transform: skewX(-0.78125deg) skewY(-0.78125deg); }
+  77.7% { transform: skewX(0.390625deg) skewY(0.390625deg); }
+  88.8% { transform: skewX(-0.1953125deg) skewY(-0.1953125deg); }
+}
+
+/* 动画类 */
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-bounce { animation: bounce 1s ease-in-out; }
+.animate-glow { animation: glow 2s ease-in-out infinite; }
+.animate-rotate { animation: rotate360 1s linear infinite; }
+.animate-slideInLeft { animation: slideInLeft 0.5s ease-out forwards; }
+.animate-slideInRight { animation: slideInRight 0.5s ease-out forwards; }
+.animate-slideInUp { animation: slideInUp 0.5s ease-out forwards; }
+.animate-slideInDown { animation: slideInDown 0.5s ease-out forwards; }
+.animate-heartbeat { animation: heartbeat 2s ease-in-out infinite; }
+.animate-twinkle { animation: twinkle 1.5s ease-in-out infinite; }
+.animate-rubber { animation: rubber 1s ease-in-out; }
+.animate-jello { animation: jello 1s ease-in-out; }
+
+/* 特效类 */
+.piece-move {
+  transition: all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+  animation: bounce 0.6s ease-in-out;
+}
+
+.piece-highlight {
+  animation: glow 1s ease-in-out infinite;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+
+.task-grid-glow {
+  animation: twinkle 1s ease-in-out infinite;
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.8);
+}
+
+.dice-rolling {
+  animation: rotate360 0.5s ease-in-out 3;
+}
+
+.dice-result {
+  animation: rubber 0.8s ease-out;
+}
+
+.button-press {
+  animation: jello 0.6s ease-in-out;
+}
+
+.modal-enter {
+  animation: slideInDown 0.4s ease-out;
+}
+
+.modal-exit {
+  animation: slideInUp 0.4s ease-in reverse;
+}
+
+.victory-celebration {
+  animation: heartbeat 1s ease-in-out infinite;
+}

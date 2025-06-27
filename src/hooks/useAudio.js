@@ -13,6 +13,31 @@ export const useAudio = () => {
     audioManager.current.playDiceSound();
   };
 
+  const playMoveSound = () => {
+    audioManager.current.playMoveSound();
+  };
+
+  const playTaskSound = () => {
+    audioManager.current.playTaskSound();
+  };
+
+  const playVictorySound = () => {
+    audioManager.current.playVictorySound();
+  };
+
+  const playErrorSound = () => {
+    audioManager.current.playErrorSound();
+  };
+
+  const playNotificationSound = () => {
+    audioManager.current.playNotificationSound();
+  };
+
+  const startBGM = () => {
+    audioManager.current.startBGM();
+    setIsBGMPlaying(true);
+  };
+
   const toggleBGM = () => {
     audioManager.current.toggleBGM();
     setIsBGMPlaying(audioManager.current.isBGMPlaying);
@@ -26,6 +51,12 @@ export const useAudio = () => {
   return {
     playButtonSound,
     playDiceSound,
+    playMoveSound,
+    playTaskSound,
+    playVictorySound,
+    playErrorSound,
+    playNotificationSound,
+    startBGM,
     toggleBGM,
     stopBGM,
     isBGMPlaying,

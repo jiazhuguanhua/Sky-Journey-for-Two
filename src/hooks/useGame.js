@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TASK_LIBRARIES, generateNickname } from '../data/taskLibrary.js';
+import { getTaskLibrary } from '../utils/taskLibraryManager.js';
 import { createBoardPositions, assignTaskCells, generateTasksForCells, getNewTask } from '../utils/gameLogic.js';
 
 export const useGame = () => {
@@ -101,8 +102,9 @@ export const useGame = () => {
     positions = assignTaskCells(positions, taskRatio);
     setBoardPositions(positions);
 
-    // 生成任务内容
-    const tasks = generateTasksForCells(positions, TASK_LIBRARIES[selectedTaskType]);
+    // 生成任务内容 - 使用任务库管理器获取自定义任务
+    const taskLibrary = getTaskLibrary(selectedTaskType);
+    const tasks = generateTasksForCells(positions, taskLibrary);
     setGameState(prev => ({ ...prev, boardTasks: tasks, canRoll: true }));
     
     setGamePhase('playing');

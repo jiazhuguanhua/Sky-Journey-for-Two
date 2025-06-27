@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGame } from './hooks/useGame.js';
 import { useAudio } from './hooks/useAudio.js';
 import { getNewTask } from './utils/gameLogic.js';
+import { getTaskLibrary } from './utils/taskLibraryManager.js';
 import { TASK_LIBRARIES } from './data/taskLibrary.js';
 import HomePage from './components/HomePage.jsx';
 import GameBoard from './components/GameBoard.jsx';
 import TaskModal from './components/TaskModal.jsx';
 import VictoryPage from './components/VictoryPage.jsx';
+import TaskEditor from './components/TaskEditor.jsx';
 import {
   TaskTypeSelectModal,
   TaskCongratsModal,
@@ -21,6 +23,7 @@ function App() {
   const {
     // 状态
     gamePhase,
+    setGamePhase,
     selectedTaskType,
     setSelectedTaskType,
     players,
@@ -55,23 +58,55 @@ function App() {
   const {
     playButtonSound,
     playDiceSound,
+    playMoveSound,
+    playTaskSound,
+    playVictorySound,
+    playErrorSound,
+    playNotificationSound,
     toggleBGM,
     stopBGM,
-    isBGMPlaying
+    isBGMPlaying,
+    startBGM
   } = useAudio();
+
+  // 自动播放BGM (需要用户交互后)
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      startBGM();
+      // 移除事件监听器，只触发一次
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
+    
+    // 在用户首次点击或按键时启动BGM
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('keydown', handleFirstInteraction);
+    
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, [startBGM]);
 
   // 处理掷骰子
   const handleRollDice = () => {
     playDiceSound();
     rollDice();
+    
+    // 移动音效
+    setTimeout(() => {
+      playMoveSound();
+    }, 500);
   };
 
   // 处理格子点击
   const handleCellClick = (position) => {
+    playButtonSound();
     if (!gameState.boardTasks || !position.hasTask) return;
     
     const cellTasks = gameState.boardTasks[position.id];
     if (cellTasks) {
+      playTaskSound();
       setSelectedCell({
         position: position,
         tasks: cellTasks
@@ -84,7 +119,7 @@ function App() {
     const currentTasks = gameState.boardTasks[cellId];
     if (!currentTasks) return;
     
-    const taskLibrary = TASK_LIBRARIES[selectedTaskType];
+    const taskLibrary = getTaskLibrary(selectedTaskType);
     
     const newTruthTask = getNewTask(currentTasks.truth, taskLibrary, 'truth');
     const newDareTask = getNewTask(currentTasks.dare, taskLibrary, 'dare');
@@ -128,7 +163,17 @@ function App() {
           taskRatio={taskRatio}
           setTaskRatio={setTaskRatio}
           onStartGame={initializeGame}
+          onOpenTaskEditor={() => setGamePhase('taskEditor')}
           playButtonSound={playButtonSound}
+        />
+      )}
+      
+      {gamePhase === 'taskEditor' && (
+        <TaskEditor
+          onBack={() => setGamePhase('home')}
+          playButtonSound={playButtonSound}
+          playNotificationSound={playNotificationSound}
+          playErrorSound={playErrorSound}
         />
       )}
       
