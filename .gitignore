@@ -75,7 +75,7 @@ temp/
 
 # Gatsby files
 .cache/
-public
+# public  # 注释掉，因为在 Vite 项目中 public/ 是静态资源目录，需要提交
 
 # Storybook build outputs
 .out

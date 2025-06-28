@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sky Journey for Two - 页面未找到</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        .container {
+            max-width: 500px;
+            padding: 2rem;
+        }
+        h1 { font-size: 3rem; margin-bottom: 1rem; }
+        p { font-size: 1.2rem; margin-bottom: 2rem; }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌟 404</h1>
+        <p>抱歉，找不到这个页面</p>
+        <p>但是我们的浪漫飞行棋还在等着你！</p>
+        <a href="/Sky-Journey-for-Two/" class="btn">返回首页 ✈️</a>
+    </div>
+    
+    <script>
+        // SPA 路由处理
+        const currentPath = window.location.pathname;
+        if (currentPath !== '/Sky-Journey-for-Two/' && currentPath !== '/Sky-Journey-for-Two/index.html') {
+            // 3秒后自动跳转到首页
+            setTimeout(() => {
+                window.location.href = '/Sky-Journey-for-Two/';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
