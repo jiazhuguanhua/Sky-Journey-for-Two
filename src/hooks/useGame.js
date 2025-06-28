@@ -87,7 +87,7 @@ export const useGame = () => {
 
   // 初始化游戏
   const initializeGame = () => {
-    // 确保玩家都有名字
+    // 确保玩家都有名字，并重置位置到起点
     const updatedPlayers = { ...players };
     if (!updatedPlayers.player1.name) {
       updatedPlayers.player1.name = generateNickname();
@@ -95,6 +95,11 @@ export const useGame = () => {
     if (!updatedPlayers.player2.name) {
       updatedPlayers.player2.name = generateNickname();
     }
+    
+    // 确保棋子位置重置到起点
+    updatedPlayers.player1.position = 0;
+    updatedPlayers.player2.position = 0;
+    
     setPlayers(updatedPlayers);
 
     // 创建棋盘并分配任务格
@@ -105,7 +110,14 @@ export const useGame = () => {
     // 生成任务内容 - 使用任务库管理器获取自定义任务
     const taskLibrary = getTaskLibrary(selectedTaskType);
     const tasks = generateTasksForCells(positions, taskLibrary);
-    setGameState(prev => ({ ...prev, boardTasks: tasks, canRoll: true }));
+    setGameState(prev => ({ 
+      ...prev, 
+      boardTasks: tasks, 
+      canRoll: true,
+      currentPlayer: 'player1', // 确保从玩家1开始
+      turn: 0, // 重置回合数
+      winner: null // 清除胜利者状态
+    }));
     
     setGamePhase('playing');
   };
@@ -296,7 +308,10 @@ export const useGame = () => {
 
   // 重置游戏
   const resetGame = () => {
+    // 重置游戏阶段
     setGamePhase('home');
+    
+    // 重置游戏状态
     setGameState({
       currentPlayer: 'player1',
       diceValue: null,
@@ -309,21 +324,32 @@ export const useGame = () => {
       canChangeTaskType: true,
       boardTasks: null
     });
+    
+    // 重置玩家位置到起点
     setPlayers({
       player1: { name: '', avatar: '🤴', position: 0, color: '#FF6B9D' },
       player2: { name: '', avatar: '👸', position: 0, color: '#4ECDC4' }
     });
+    
+    // 重置任务类型
     setSelectedTaskType('couple');
+    
+    // 重置任务相关状态
     setCurrentTask(null);
     setIsTaskActive(false);
     setIsTimerStarted(false);
     setTaskTimeLeft(0);
+    
+    // 重置动画状态
     setShowTimerAnimation(false);
     setShowCompleteAnimation(false);
     setShowSkipAnimation(false);
     setShowTaskCongrats(false);
     setShowTaskTypeSelect(false);
     setJustMoved(false);
+    
+    // 重置棋盘和选中状态
+    setBoardPositions(createBoardPositions()); // 重新创建初始棋盘
     setSelectedCell(null);
   };
 
