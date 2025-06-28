@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TASK_LIBRARIES } from '../data/taskLibrary.js';
 import { taskLibraryManager, hasCustomTasks } from '../utils/taskLibraryManager.js';
+import SyncStatusPanel from './SyncStatusPanel.jsx';
 
 const TaskEditor = ({ onBack, playButtonSound, playNotificationSound, playErrorSound }) => {
   const [selectedLibrary, setSelectedLibrary] = useState('couple');
@@ -10,6 +11,9 @@ const TaskEditor = ({ onBack, playButtonSound, playNotificationSound, playErrorS
   const [editingTask, setEditingTask] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showSyncStatus, setShowSyncStatus] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('idle'); // idle, saving, conflict
+  const [conflictData, setConflictData] = useState(null);
 
   // 加载当前选中库的任务
   useEffect(() => {
@@ -86,24 +90,133 @@ const TaskEditor = ({ onBack, playButtonSound, playNotificationSound, playErrorS
     }
   };
 
-  // 保存到本地存储
-  const handleSaveLibrary = () => {
+  // 保存到云端（新的云端同步版本）
+  const handleSaveLibrary = async () => {
+    setSyncStatus('saving');
+    
     try {
       // 转换任务对象数组为字符串数组
       const taskStrings = tasks.map(task => task.description);
       
-      // 使用任务库管理器保存
-      const success = taskLibraryManager.saveCustomTasks(selectedLibrary, selectedCategory, taskStrings);
+      // 使用任务库管理器保存（支持云端同步）
+      const result = await taskLibraryManager.saveCustomTasks(selectedLibrary, selectedCategory, taskStrings);
       
-      if (success) {
-        playNotificationSound();
-        alert(`任务库已保存！\n\n保存位置：浏览器本地存储\n保存内容：${selectedLibrary} - ${selectedCategory === 'truth' ? '真心话' : '大冒险'}\n任务数量：${taskStrings.length} 个\n\n这些自定义任务将在下次游戏时自动使用。`);
+      if (result.success) {
+        if (result.synced) {
+          playNotificationSound();
+          alert(`✅ 任务库已保存并同步到云端！\n\n📍 保存内容：${selectedLibrary} - ${selectedCategory === 'truth' ? '真心话' : '大冒险'}\n📊 任务数量：${taskStrings.length} 个\n☁️ 版本号：v${result.version}\n\n这些任务可以在任何设备上访问！`);
+        } else {
+          playNotificationSound();
+          const errorMsg = result.error ? `\n⚠️ 云端同步失败：${result.error}` : '';
+          alert(`💾 任务库已保存到本地！\n\n📍 保存内容：${selectedLibrary} - ${selectedCategory === 'truth' ? '真心话' : '大冒险'}\n📊 任务数量：${taskStrings.length} 个\n💽 保存位置：浏览器本地存储${errorMsg}\n\n这些自定义任务将在下次游戏时自动使用。`);
+        }
+      } else if (result.conflict) {
+        // 处理同步冲突
+        setSyncStatus('conflict');
+        setConflictData(result);
+        playErrorSound();
+        return; // 不清除保存状态，等待用户处理冲突
       } else {
-        throw new Error('保存失败');
+        throw new Error(result.error || '保存失败');
       }
     } catch (error) {
       playErrorSound();
       alert('保存失败：' + error.message);
+    } finally {
+      if (syncStatus !== 'conflict') {
+        setSyncStatus('idle');
+      }
+    }
+  };
+
+  // 处理同步冲突
+  const handleResolveConflict = async (resolution) => {
+    if (!conflictData) return;
+    
+    try {
+      const result = await conflictData.resolve(resolution);
+      if (result.success) {
+        setConflictData(null);
+        setSyncStatus('idle');
+        playNotificationSound();
+        alert(`✅ 冲突已解决！任务库已更新到版本 v${result.version}`);
+        
+        // 刷新任务列表
+        const taskObjects = result.tasks.map((taskStr, index) => ({
+          id: `${selectedLibrary}_${selectedCategory}_${index}`,
+          title: taskStr.length > 30 ? taskStr.substring(0, 30) + '...' : taskStr,
+          description: taskStr,
+          type: selectedCategory
+        }));
+        setTasks(taskObjects);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      playErrorSound();
+      alert('解决冲突失败：' + error.message);
+    }
+  };
+
+  // 分享任务库
+  const handleShareLibrary = async () => {
+    try {
+      // 先保存到云端
+      if (tasks.length === 0) {
+        alert('请先添加一些任务再分享！');
+        return;
+      }
+
+      const taskStrings = tasks.map(task => task.description);
+      const saveResult = await taskLibraryManager.saveCustomTasks(selectedLibrary, selectedCategory, taskStrings);
+      
+      if (!saveResult.synced) {
+        alert('分享功能需要云端同步支持，请检查网络连接！');
+        return;
+      }
+
+      // 生成分享链接
+      const shareResult = await taskLibraryManager.shareTaskLibrary(selectedLibrary, selectedCategory);
+      
+      if (shareResult.success) {
+        // 复制到剪贴板
+        await navigator.clipboard.writeText(shareResult.shareUrl);
+        playNotificationSound();
+        alert(`🎉 分享链接已生成并复制到剪贴板！\n\n🔗 分享ID：${shareResult.shareId}\n📋 任务数量：${taskStrings.length} 个\n\n其他玩家可以使用这个链接导入您的任务库。`);
+      } else {
+        throw new Error(shareResult.error);
+      }
+    } catch (error) {
+      playErrorSound();
+      alert('分享失败：' + error.message);
+    }
+  };
+
+  // 导入分享的任务库
+  const handleImportShared = async () => {
+    const shareId = prompt('请输入分享ID或完整的分享链接：');
+    if (!shareId) return;
+
+    // 提取shareId（如果是完整URL）
+    const extractedId = shareId.includes('/') ? shareId.split('/').pop() : shareId;
+    
+    try {
+      const result = await taskLibraryManager.importSharedTasks(extractedId);
+      
+      if (result.success) {
+        playNotificationSound();
+        alert(`✅ 成功导入任务库！\n\n📚 类型：${result.taskType}\n📂 分类：${result.category}\n📊 任务数量：${result.tasksCount} 个\n\n任务已保存，您可以在相应的分类中查看。`);
+        
+        // 如果导入的是当前选择的类型，刷新任务列表
+        if (result.taskType === selectedLibrary && result.category === selectedCategory) {
+          location.reload(); // 简单粗暴的刷新方法
+        }
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      playErrorSound();
+      alert('导入失败：' + error.message);
     }
   };
 
@@ -344,7 +457,25 @@ const TaskEditor = ({ onBack, playButtonSound, playNotificationSound, playErrorS
             onClick={() => { handleSaveLibrary(); playButtonSound(); }}
             className="btn animate-pulse"
             style={{
-              background: '#2196F3',
+              background: syncStatus === 'saving' ? '#FFA500' : '#2196F3',
+              border: 'none',
+              color: 'white',
+              padding: '12px 24px',
+              borderRadius: '25px',
+              cursor: syncStatus === 'saving' ? 'not-allowed' : 'pointer',
+              fontSize: '16px',
+              opacity: syncStatus === 'saving' ? 0.7 : 1
+            }}
+            disabled={syncStatus === 'saving'}
+          >
+            {syncStatus === 'saving' ? '⏳ 保存中...' : '☁️ 保存到云端'}
+          </button>
+
+          <button
+            onClick={() => { handleShareLibrary(); playButtonSound(); }}
+            className="btn animate-bounce"
+            style={{
+              background: '#FF9800',
               border: 'none',
               color: 'white',
               padding: '12px 24px',
@@ -353,7 +484,39 @@ const TaskEditor = ({ onBack, playButtonSound, playNotificationSound, playErrorS
               fontSize: '16px'
             }}
           >
-            💾 保存到本地
+            🔗 分享任务库
+          </button>
+
+          <button
+            onClick={() => { setShowSyncStatus(true); playButtonSound(); }}
+            className="btn"
+            style={{
+              background: '#6C757D',
+              border: 'none',
+              color: 'white',
+              padding: '12px 24px',
+              borderRadius: '25px',
+              cursor: 'pointer',
+              fontSize: '16px'
+            }}
+          >
+            📊 同步状态
+          </button>
+
+          <button
+            onClick={() => { handleImportShared(); playButtonSound(); }}
+            className="btn"
+            style={{
+              background: '#28A745',
+              border: 'none',
+              color: 'white',
+              padding: '12px 24px',
+              borderRadius: '25px',
+              cursor: 'pointer',
+              fontSize: '16px'
+            }}
+          >
+            📥 导入分享
           </button>
           
           <button
@@ -630,6 +793,143 @@ const TaskEditor = ({ onBack, playButtonSound, playNotificationSound, playErrorS
           </div>
         </div>
       </div>
+
+      {/* 同步状态面板 */}
+      {showSyncStatus && (
+        <SyncStatusPanel onClose={() => setShowSyncStatus(false)} />
+      )}
+
+      {/* 冲突解决界面 */}
+      {syncStatus === 'conflict' && conflictData && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1001,
+          fontFamily: 'Arial, sans-serif'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            padding: '30px',
+            maxWidth: '600px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <h2 style={{ color: '#E74C3C', marginBottom: '20px' }}>
+              ⚠️ 检测到同步冲突
+            </h2>
+            
+            <p style={{ marginBottom: '20px', color: '#555' }}>
+              您的本地任务与云端任务发生了冲突。请选择如何处理：
+            </p>
+
+            <div style={{ display: 'grid', gap: '15px', marginBottom: '25px' }}>
+              <div style={{
+                border: '2px solid #3498DB',
+                borderRadius: '10px',
+                padding: '15px'
+              }}>
+                <h4 style={{ color: '#3498DB', marginBottom: '10px' }}>
+                  💻 本地版本 ({conflictData.clientTasks.length} 个任务)
+                </h4>
+                <div style={{ maxHeight: '150px', overflow: 'auto', fontSize: '14px' }}>
+                  {conflictData.clientTasks.map((task, index) => (
+                    <div key={index} style={{ padding: '5px 0', borderBottom: '1px solid #eee' }}>
+                      {task.length > 60 ? task.substring(0, 60) + '...' : task}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{
+                border: '2px solid #E67E22',
+                borderRadius: '10px',
+                padding: '15px'
+              }}>
+                <h4 style={{ color: '#E67E22', marginBottom: '10px' }}>
+                  ☁️ 云端版本 ({conflictData.serverTasks.length} 个任务)
+                </h4>
+                <div style={{ maxHeight: '150px', overflow: 'auto', fontSize: '14px' }}>
+                  {conflictData.serverTasks.map((task, index) => (
+                    <div key={index} style={{ padding: '5px 0', borderBottom: '1px solid #eee' }}>
+                      {task.length > 60 ? task.substring(0, 60) + '...' : task}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => handleResolveConflict('client')}
+                style={{
+                  background: '#3498DB',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px 20px',
+                  cursor: 'pointer',
+                  flex: 1,
+                  minWidth: '120px'
+                }}
+              >
+                使用本地版本
+              </button>
+              
+              <button
+                onClick={() => handleResolveConflict('server')}
+                style={{
+                  background: '#E67E22',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px 20px',
+                  cursor: 'pointer',
+                  flex: 1,
+                  minWidth: '120px'
+                }}
+              >
+                使用云端版本
+              </button>
+              
+              <button
+                onClick={() => handleResolveConflict('merge')}
+                style={{
+                  background: '#27AE60',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px 20px',
+                  cursor: 'pointer',
+                  flex: 1,
+                  minWidth: '120px'
+                }}
+              >
+                合并两个版本
+              </button>
+            </div>
+
+            <div style={{
+              marginTop: '20px',
+              padding: '15px',
+              background: '#FFF3CD',
+              borderRadius: '8px',
+              fontSize: '13px',
+              color: '#856404'
+            }}>
+              💡 提示：合并会将两个版本的任务去重后合并在一起
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

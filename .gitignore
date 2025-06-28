@@ -20,6 +20,11 @@ out/
 .env.test.local
 .env.production.local
 
+# Server environment
+server/.env
+server/node_modules/
+server/dist/
+
 # Runtime data
 pids
 *.pid

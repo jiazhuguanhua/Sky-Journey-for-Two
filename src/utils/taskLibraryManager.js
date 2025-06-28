@@ -1,10 +1,58 @@
 // 任务库管理器 - 统一处理原始任务和自定义任务
 import { TASK_LIBRARIES } from '../data/taskLibrary.js';
+import { cloudSyncService } from '../services/cloudSyncService.js';
 
 class TaskLibraryManager {
   constructor() {
     this.customTasks = new Map();
+    this.cloudEnabled = false;
+    this.syncVersions = new Map(); // 跟踪版本号
+    this.loadSyncVersions(); // 先加载版本信息
     this.loadCustomTasks();
+    this.initCloudSync();
+  }
+
+  // 初始化云端同步
+  async initCloudSync() {
+    try {
+      this.cloudEnabled = await cloudSyncService.checkHealth();
+      if (this.cloudEnabled) {
+        console.log('✅ 云端同步服务已连接');
+        await this.syncFromCloud();
+      } else {
+        console.log('📦 使用本地存储模式');
+      }
+    } catch (error) {
+      console.warn('云端同步初始化失败，使用本地模式:', error);
+      this.cloudEnabled = false;
+    }
+  }
+
+  // 从云端同步所有任务库
+  async syncFromCloud() {
+    const libraryKeys = Object.keys(TASK_LIBRARIES);
+    const categories = ['truth', 'dare'];
+    
+    for (const library of libraryKeys) {
+      for (const category of categories) {
+        try {
+          const cloudData = await cloudSyncService.getTasks(library, category);
+          if (cloudData && cloudData.tasks.length > 0) {
+            // 检查本地版本
+            const localVersion = this.getSyncVersion(library, category);
+            
+            if (cloudData.version > localVersion) {
+              // 云端版本更新，使用云端数据
+              this.setCustomTasks(library, category, cloudData.tasks);
+              this.setSyncVersion(library, category, cloudData.version);
+              console.log(`📥 从云端同步: ${library}/${category} (v${cloudData.version})`);
+            }
+          }
+        } catch (error) {
+          console.warn(`同步失败 ${library}/${category}:`, error);
+        }
+      }
+    }
   }
 
   // 从localStorage加载自定义任务
@@ -65,12 +113,65 @@ class TaskLibraryManager {
     return TASK_LIBRARIES[library]?.tasks?.[category] || [];
   }
 
-  // 保存自定义任务
-  saveCustomTasks(library, category, tasks) {
+  // 保存自定义任务 (支持云端同步)
+  async saveCustomTasks(library, category, tasks) {
     // 保存到内存
     this.setCustomTasks(library, category, tasks);
     
-    // 保存到localStorage
+    // 保存到localStorage (作为备份)
+    this.saveToLocalStorage(library, category, tasks);
+    
+    // 云端同步
+    if (this.cloudEnabled) {
+      const currentVersion = this.getSyncVersion(library, category);
+      const result = await cloudSyncService.syncTasks(library, category, tasks, currentVersion);
+      
+      if (result.success) {
+        this.setSyncVersion(library, category, result.version);
+        console.log(`☁️ 云端同步成功: ${library}/${category} (v${result.version})`);
+        return { success: true, synced: true, version: result.version };
+      } else if (result.conflict) {
+        // 处理同步冲突
+        return this.handleSyncConflict(library, category, tasks, result);
+      } else {
+        console.warn(`云端同步失败: ${library}/${category}`, result.error);
+        return { success: true, synced: false, error: result.error };
+      }
+    }
+    
+    return { success: true, synced: false };
+  }
+
+  // 处理同步冲突
+  async handleSyncConflict(library, category, localTasks, conflictResult) {
+    return {
+      success: false,
+      conflict: true,
+      serverTasks: conflictResult.serverTasks,
+      clientTasks: localTasks,
+      serverVersion: conflictResult.serverVersion,
+      resolve: async (resolution) => {
+        const resolvedTasks = cloudSyncService.resolveConflict(
+          resolution, 
+          conflictResult.serverTasks, 
+          localTasks
+        );
+        
+        // 强制更新到云端
+        const result = await cloudSyncService.updateTasks(library, category, resolvedTasks);
+        if (result.success) {
+          this.setCustomTasks(library, category, resolvedTasks);
+          this.setSyncVersion(library, category, result.version);
+          this.saveToLocalStorage(library, category, resolvedTasks);
+          return { success: true, tasks: resolvedTasks, version: result.version };
+        }
+        return { success: false, error: result.error };
+      }
+    };
+  }
+
+  // 保存到本地存储
+  saveToLocalStorage(library, category, tasks) {
     const key = `customTasks_${library}_${category}`;
     const taskObjects = tasks.map((task, index) => ({
       id: `custom_${library}_${category}_${index}_${Date.now()}`,
@@ -88,64 +189,109 @@ class TaskLibraryManager {
     }
   }
 
-  // 获取可用的任务库列表
-  getAvailableLibraries() {
-    return Object.keys(TASK_LIBRARIES).map(key => ({
-      key,
-      ...TASK_LIBRARIES[key]
-    }));
+  // 获取和设置同步版本
+  getSyncVersion(library, category) {
+    const key = `${library}.${category}`;
+    return this.syncVersions.get(key) || 0;
   }
 
-  // 重置为默认任务库
-  resetToDefault(library, category) {
+  setSyncVersion(library, category, version) {
     const key = `${library}.${category}`;
-    this.customTasks.delete(key);
+    this.syncVersions.set(key, version);
+    // 持久化版本信息
+    localStorage.setItem(`syncVersion_${library}_${category}`, version.toString());
+  }
+
+  loadSyncVersions() {
+    const libraryKeys = Object.keys(TASK_LIBRARIES);
+    const categories = ['truth', 'dare'];
     
-    // 从localStorage删除
-    const storageKey = `customTasks_${library}_${category}`;
-    localStorage.removeItem(storageKey);
+    libraryKeys.forEach(library => {
+      categories.forEach(category => {
+        const versionStr = localStorage.getItem(`syncVersion_${library}_${category}`);
+        if (versionStr) {
+          this.setSyncVersion(library, category, parseInt(versionStr, 10));
+        }
+      });
+    });
   }
 
-  // 检查是否有自定义任务
-  hasCustomTasks(library, category) {
-    const key = `${library}.${category}`;
-    return this.customTasks.has(key) && this.customTasks.get(key).length > 0;
-  }
-
-  // 导出任务库
-  exportTasks(library, category) {
-    const tasks = this.getTasks(library, category);
-    const libraryInfo = TASK_LIBRARIES[library];
+  // 获取同步状态
+  getSyncStatus() {
+    const status = cloudSyncService.getSyncStatus();
+    const libraryStatus = {};
+    
+    Object.keys(TASK_LIBRARIES).forEach(library => {
+      ['truth', 'dare'].forEach(category => {
+        const key = `${library}.${category}`;
+        libraryStatus[key] = {
+          hasCustomTasks: this.customTasks.has(key),
+          version: this.getSyncVersion(library, category),
+          lastModified: localStorage.getItem(`lastModified_${library}_${category}`)
+        };
+      });
+    });
     
     return {
-      library: library,
-      category: category,
-      libraryName: libraryInfo?.name || library,
-      tasks: tasks,
-      exportTime: new Date().toISOString(),
-      version: '1.0'
+      ...status,
+      cloudEnabled: this.cloudEnabled,
+      libraries: libraryStatus
     };
   }
 
-  // 导入任务库
-  importTasks(importData) {
-    if (!importData.library || !importData.category || !Array.isArray(importData.tasks)) {
-      throw new Error('Invalid import data format');
+  // 手动触发云端同步
+  async forceSyncToCloud(library, category) {
+    if (!this.cloudEnabled) {
+      return { success: false, error: '云端同步未启用' };
     }
-
-    const { library, category, tasks } = importData;
     
-    // 验证library和category是否有效
-    if (!TASK_LIBRARIES[library]) {
-      throw new Error(`Unknown library: ${library}`);
+    const tasks = this.getTasks(library, category);
+    const currentVersion = this.getSyncVersion(library, category);
+    
+    const result = await cloudSyncService.updateTasks(library, category, tasks);
+    
+    if (result.success) {
+      this.setSyncVersion(library, category, result.version);
+      return { success: true, version: result.version };
     }
+    
+    return { success: false, error: result.error };
+  }
 
-    if (!['truth', 'dare'].includes(category)) {
-      throw new Error(`Invalid category: ${category}`);
+  // 分享任务库
+  async shareTaskLibrary(library, category) {
+    if (!this.cloudEnabled) {
+      return { success: false, error: '需要云端同步功能' };
     }
+    
+    // 确保任务库已同步到云端
+    const syncResult = await this.forceSyncToCloud(library, category);
+    if (!syncResult.success) {
+      return { success: false, error: '同步到云端失败' };
+    }
+    
+    return await cloudSyncService.shareTasks(library, category);
+  }
 
-    // 保存导入的任务
-    return this.saveCustomTasks(library, category, tasks);
+  // 导入分享的任务库
+  async importSharedTasks(shareId) {
+    if (!this.cloudEnabled) {
+      return { success: false, error: '需要云端同步功能' };
+    }
+    
+    const result = await cloudSyncService.getSharedTasks(shareId);
+    if (result.success) {
+      // 保存到本地
+      await this.saveCustomTasks(result.taskType, result.category, result.tasks);
+      return { 
+        success: true, 
+        taskType: result.taskType, 
+        category: result.category,
+        tasksCount: result.tasks.length
+      };
+    }
+    
+    return result;
   }
 }
 
